@@ -1,0 +1,46 @@
+{
+  "benchmark_samples": [
+    {
+      "id": "sample_001",
+      "category": "Machine Learning Engineer",
+      "resume_text": "Alice Chen. Senior Machine Learning Engineer with 5 years experience. Master of Science in Computer Science from Stanford University. Skills: Python, PyTorch, TensorFlow, Scikit-Learn, Docker, Kubernetes, SQL, PostgreSQL, Git. Built production computer vision object detection models improving inference latency by 30%. Developed scalable distributed training pipelines using PyTorch on AWS.",
+      "ground_truth_skills": ["Python", "PyTorch", "TensorFlow", "Scikit-Learn", "Docker", "Kubernetes", "SQL", "PostgreSQL", "Git", "Computer Vision", "AWS"],
+      "ground_truth_experience_years": 5.0,
+      "ground_truth_education_level": 4,
+      "job_text": "Senior ML Engineer needed. Must have 4+ years of experience. Required skills: Python, PyTorch, Docker, Machine Learning. Preferred: Kubernetes, AWS. Bachelor's degree required.",
+      "expected_match_status": {
+        "Python": "direct_match",
+        "PyTorch": "direct_match",
+        "Docker": "direct_match"
+      }
+    },
+    {
+      "id": "sample_002",
+      "category": "Backend Engineer",
+      "resume_text": "Bob Smith. Backend Developer with 3 years experience. B.S. in Software Engineering. Proficient in Python, Flask, Django, PostgreSQL, MySQL, REST APIs, Git. Engineered RESTful microservices using Flask and Celery.",
+      "ground_truth_skills": ["Python", "Flask", "Django", "PostgreSQL", "MySQL", "REST APIs", "Git"],
+      "ground_truth_experience_years": 3.0,
+      "ground_truth_education_level": 3,
+      "job_text": "FastAPI Backend Developer. Requirements: Python, FastAPI, PostgreSQL, Docker. Preferred: Kubernetes.",
+      "expected_match_status": {
+        "Python": "direct_match",
+        "FastAPI": "transferable_match",
+        "Docker": "missing"
+      }
+    },
+    {
+      "id": "sample_003",
+      "category": "Data Engineer",
+      "resume_text": "Carlos Gomez. Data Engineer with 4 years experience. B.Tech in Information Technology. Core competencies: Python, SQL, Apache Spark, Apache Kafka, PostgreSQL, Docker, AWS. Designed ETL streaming data pipelines using Apache Spark and Kafka.",
+      "ground_truth_skills": ["Python", "SQL", "Apache Spark", "Apache Kafka", "PostgreSQL", "Docker", "AWS"],
+      "ground_truth_experience_years": 4.0,
+      "ground_truth_education_level": 3,
+      "job_text": "Big Data Engineer. Requirements: Apache Spark, SQL, Python, Apache Kafka. Preferred: Docker, AWS.",
+      "expected_match_status": {
+        "Apache Spark": "direct_match",
+        "SQL": "direct_match",
+        "Apache Kafka": "direct_match"
+      }
+    }
+  ]
+}
