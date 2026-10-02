@@ -41,6 +41,140 @@
         "SQL": "direct_match",
         "Apache Kafka": "direct_match"
       }
+    },
+    {
+      "id": "sample_004",
+      "category": "Full-Stack Engineer",
+      "resume_text": "David Miller. Full-Stack Software Engineer with 4 years experience. B.S. in Computer Science. Technologies: Python, FastAPI, React, TypeScript, JavaScript, PostgreSQL, Docker, Git. Built modern responsive web applications with React frontend and FastAPI microservices.",
+      "ground_truth_skills": ["Python", "FastAPI", "React", "TypeScript", "JavaScript", "PostgreSQL", "Docker", "Git"],
+      "ground_truth_experience_years": 4.0,
+      "ground_truth_education_level": 3,
+      "job_text": "Senior Full-Stack Engineer. Requirements: React, TypeScript, Python, FastAPI. Preferred: Docker, PostgreSQL.",
+      "expected_match_status": {
+        "React": "direct_match",
+        "TypeScript": "direct_match",
+        "FastAPI": "direct_match",
+        "Python": "direct_match"
+      }
+    },
+    {
+      "id": "sample_005",
+      "category": "Cloud & DevOps Engineer",
+      "resume_text": "Elena Rostova. Senior DevOps and Infrastructure Engineer with 6 years experience. Master of Science in Network Engineering. Skills: Docker, Kubernetes, AWS, Terraform, Linux, Git, Python, CI/CD. Architected multi-region Kubernetes clusters on AWS using Terraform.",
+      "ground_truth_skills": ["Docker", "Kubernetes", "AWS", "Terraform", "Linux", "Git", "Python", "CI/CD"],
+      "ground_truth_experience_years": 6.0,
+      "ground_truth_education_level": 4,
+      "job_text": "Site Reliability Engineer. Requirements: Kubernetes, Docker, AWS, Terraform. Preferred: Python, CI/CD.",
+      "expected_match_status": {
+        "Kubernetes": "direct_match",
+        "Docker": "direct_match",
+        "AWS": "direct_match",
+        "Terraform": "direct_match"
+      }
+    },
+    {
+      "id": "sample_006",
+      "category": "NLP & LLM Engineer",
+      "resume_text": "Fiona Gallagher. Applied AI and NLP Engineer with 3 years experience. Master of Science in Artificial Intelligence. Expertise: Python, PyTorch, Hugging Face Transformers, Large Language Models, RAG, Vector Search, Git. Fine-tuned BERT and Llama models for domain-specific RAG retrieval systems.",
+      "ground_truth_skills": ["Python", "PyTorch", "Hugging Face Transformers", "Large Language Models", "RAG", "Vector Search", "Git", "NLP"],
+      "ground_truth_experience_years": 3.0,
+      "ground_truth_education_level": 4,
+      "job_text": "Generative AI Engineer. Requirements: Python, PyTorch, Large Language Models, RAG. Preferred: Vector Search, Docker.",
+      "expected_match_status": {
+        "Python": "direct_match",
+        "PyTorch": "direct_match",
+        "Large Language Models": "direct_match",
+        "RAG": "direct_match"
+      }
+    },
+    {
+      "id": "sample_007",
+      "category": "Database Administrator",
+      "resume_text": "George Vance. Database Administrator with 5 years experience. B.S. in Information Systems. Skills: PostgreSQL, MySQL, Redis, SQL, Docker, Linux, Git. Optimized PostgreSQL query execution plans, indexing strategies, and connection pooling for high-concurrency workloads.",
+      "ground_truth_skills": ["PostgreSQL", "MySQL", "Redis", "SQL", "Docker", "Linux", "Git"],
+      "ground_truth_experience_years": 5.0,
+      "ground_truth_education_level": 3,
+      "job_text": "Database Reliability Engineer. Requirements: PostgreSQL, SQL, Docker, Redis. Preferred: Linux, Python.",
+      "expected_match_status": {
+        "PostgreSQL": "direct_match",
+        "SQL": "direct_match",
+        "Redis": "direct_match",
+        "Docker": "direct_match"
+      }
+    },
+    {
+      "id": "sample_008",
+      "category": "Data Scientist",
+      "resume_text": "Hannah Abbott. Data Scientist with 3 years experience. Master's in Statistics. Competencies: Python, Pandas, Scikit-Learn, SQL, Machine Learning, Git. Built customer churn predictive models using Scikit-Learn and feature engineering with Pandas.",
+      "ground_truth_skills": ["Python", "Pandas", "Scikit-Learn", "SQL", "Machine Learning", "Git"],
+      "ground_truth_experience_years": 3.0,
+      "ground_truth_education_level": 4,
+      "job_text": "Lead Data Scientist. Requirements: Python, Machine Learning, Scikit-Learn, SQL. Preferred: Deep Learning, PyTorch.",
+      "expected_match_status": {
+        "Python": "direct_match",
+        "Machine Learning": "direct_match",
+        "Scikit-Learn": "direct_match",
+        "SQL": "direct_match"
+      }
+    },
+    {
+      "id": "sample_009",
+      "category": "Junior ML Engineer",
+      "resume_text": "Ian Malcolm. Junior Machine Learning Developer with 1 year experience. Bachelor of Science in Mathematics. Knowledge of Python, PyTorch, Scikit-Learn, Git. Implemented baseline convolutional neural networks for image classification coursework.",
+      "ground_truth_skills": ["Python", "PyTorch", "Scikit-Learn", "Git"],
+      "ground_truth_experience_years": 1.0,
+      "ground_truth_education_level": 3,
+      "job_text": "Staff ML Engineer. Requirements: 8+ years experience. Required skills: PyTorch, Docker, Kubernetes, MLOps. Preferred: AWS.",
+      "expected_match_status": {
+        "PyTorch": "direct_match",
+        "Docker": "missing",
+        "Kubernetes": "missing",
+        "MLOps": "missing"
+      }
+    },
+    {
+      "id": "sample_010",
+      "category": "Backend Engineer - Transferable",
+      "resume_text": "Julia Roberts. Backend Software Developer with 4 years experience. B.S. in Computer Science. Proficient in Python, Django, PostgreSQL, REST APIs, Git. Engineered high-traffic eCommerce platform using Django ORM and PostgreSQL.",
+      "ground_truth_skills": ["Python", "Django", "PostgreSQL", "REST APIs", "Git"],
+      "ground_truth_experience_years": 4.0,
+      "ground_truth_education_level": 3,
+      "job_text": "FastAPI Microservices Developer. Requirements: FastAPI, PostgreSQL, REST APIs. Preferred: Docker.",
+      "expected_match_status": {
+        "FastAPI": "transferable_match",
+        "PostgreSQL": "direct_match",
+        "REST APIs": "direct_match"
+      }
+    },
+    {
+      "id": "sample_011",
+      "category": "Computer Vision Engineer",
+      "resume_text": "Kevin Flynn. Computer Vision Engineer with 4 years experience. Master of Science in Computer Science. Skills: Python, PyTorch, OpenCV, Computer Vision, Deep Learning, Docker, Git. Developed real-time object tracking and segmentation algorithms with OpenCV and PyTorch.",
+      "ground_truth_skills": ["Python", "PyTorch", "OpenCV", "Computer Vision", "Deep Learning", "Docker", "Git"],
+      "ground_truth_experience_years": 4.0,
+      "ground_truth_education_level": 4,
+      "job_text": "Computer Vision Specialist. Requirements: Computer Vision, PyTorch, OpenCV, Deep Learning. Preferred: Docker, AWS.",
+      "expected_match_status": {
+        "Computer Vision": "direct_match",
+        "PyTorch": "direct_match",
+        "OpenCV": "direct_match",
+        "Deep Learning": "direct_match"
+      }
+    },
+    {
+      "id": "sample_012",
+      "category": "MLOps Engineer",
+      "resume_text": "Laura Croft. MLOps Engineer with 5 years experience. B.S. in Computer Science. Expertise: Python, Docker, Kubernetes, MLOps, CI/CD, AWS, Git. Built end-to-end model training and deployment pipelines with automated CI/CD and monitoring.",
+      "ground_truth_skills": ["Python", "Docker", "Kubernetes", "MLOps", "CI/CD", "AWS", "Git"],
+      "ground_truth_experience_years": 5.0,
+      "ground_truth_education_level": 3,
+      "job_text": "Production ML Platform Engineer. Requirements: Kubernetes, Docker, MLOps, AWS. Preferred: Python, CI/CD.",
+      "expected_match_status": {
+        "Kubernetes": "direct_match",
+        "Docker": "direct_match",
+        "MLOps": "direct_match",
+        "AWS": "direct_match"
+      }
     }
   ]
 }

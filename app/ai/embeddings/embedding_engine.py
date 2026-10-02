@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import hashlib
 from typing import List, Union
 import numpy as np
@@ -6,11 +7,13 @@ from app.core.logging import logger
 
 
 class EmbeddingEngine:
+    MAX_CACHE_SIZE: int = 4096
+
     def __init__(self, model_name: str = None):
         self.model_name = model_name or settings.EMBEDDING_MODEL_NAME
         self.dimension = settings.EMBEDDING_DIMENSION
         self._model = None
-        self._cache = {}
+        self._cache: OrderedDict[str, np.ndarray] = OrderedDict()
 
     def _get_model(self):
         if self._model is None:
@@ -40,6 +43,7 @@ class EmbeddingEngine:
             clean_t = t.strip()
             cache_key = hashlib.sha256(clean_t.encode("utf-8")).hexdigest()
             if cache_key in self._cache:
+                self._cache.move_to_end(cache_key)
                 results.append((idx, self._cache[cache_key]))
             else:
                 texts_to_compute.append(clean_t)
@@ -65,6 +69,10 @@ class EmbeddingEngine:
                 norm = np.linalg.norm(norm_emb)
                 if norm > 0:
                     norm_emb = norm_emb / norm
+
+                # Enforce bounded LRU cache capacity
+                if len(self._cache) >= self.MAX_CACHE_SIZE:
+                    self._cache.popitem(last=False)
                 self._cache[key] = norm_emb
                 results.append((orig_idx, norm_emb))
 
@@ -81,7 +89,8 @@ class EmbeddingEngine:
         if norm_a == 0 or norm_b == 0:
             return 0.0
         similarity = float(np.dot(a, b) / (norm_a * norm_b))
-        return max(0.0, min(1.0, (similarity + 1.0) / 2.0 if similarity < 0 else similarity))
+        # Monotonically map cosine similarity in range [0.0, 1.0]
+        return max(0.0, min(1.0, float(similarity)))
 
     def _deterministic_fallback_vector(self, text: str) -> np.ndarray:
         vec = np.zeros(self.dimension, dtype=np.float32)

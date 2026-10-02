@@ -20,6 +20,20 @@ class MatchingEngine:
             for s in candidate_profile.get("skills", [])
         }
 
+        # Gather all candidate sentences from summary, experiences, and projects for semantic inference
+        candidate_sentences = []
+        if candidate_profile.get("summary"):
+            candidate_sentences.append(candidate_profile["summary"])
+        for exp in candidate_profile.get("experiences", []):
+            for ach in exp.get("key_achievements", []):
+                if ach and len(ach.strip()) > 15:
+                    candidate_sentences.append(ach.strip())
+        for proj in candidate_profile.get("projects", []):
+            desc = proj.get("description", "")
+            for p_line in desc.split("\n"):
+                if p_line and len(p_line.strip()) > 15:
+                    candidate_sentences.append(p_line.strip())
+
         req_skills_spec = job_data.get("required_skills", [])
         req_evidences = []
         req_scores = []
@@ -31,6 +45,27 @@ class MatchingEngine:
                 candidate_skills_list
             )
             quote = candidate_evidence_map.get(matched_skill, "") if matched_skill else None
+
+            # Out-of-vocabulary / semantic inference fallback:
+            # If skill not found in ontology or candidate list, check semantic similarity with candidate evidence
+            if status == MatchStatus.MISSING and candidate_sentences:
+                req_vec = embedding_engine.encode(req_name)
+                best_sim = 0.0
+                best_sent = ""
+                for sent in candidate_sentences:
+                    s_vec = embedding_engine.encode(sent)
+                    sim = embedding_engine.cosine_similarity(req_vec, s_vec)
+                    if sim > best_sim:
+                        best_sim = sim
+                        best_sent = sent
+
+                if best_sim >= 0.72:
+                    status = MatchStatus.INFERRED
+                    score = round(best_sim * 0.70, 2)
+                    matched_skill = req_name
+                    quote = best_sent
+                    explanation = f"Semantically inferred from candidate experience: '{best_sent[:120]}...' (semantic similarity: {int(best_sim*100)}%)."
+
             req_scores.append(score)
             req_evidences.append({
                 "skill_name": req_name,
@@ -55,6 +90,25 @@ class MatchingEngine:
                 candidate_skills_list
             )
             quote = candidate_evidence_map.get(matched_skill, "") if matched_skill else None
+
+            if status == MatchStatus.MISSING and candidate_sentences:
+                req_vec = embedding_engine.encode(pref_name)
+                best_sim = 0.0
+                best_sent = ""
+                for sent in candidate_sentences:
+                    s_vec = embedding_engine.encode(sent)
+                    sim = embedding_engine.cosine_similarity(req_vec, s_vec)
+                    if sim > best_sim:
+                        best_sim = sim
+                        best_sent = sent
+
+                if best_sim >= 0.72:
+                    status = MatchStatus.INFERRED
+                    score = round(best_sim * 0.70, 2)
+                    matched_skill = pref_name
+                    quote = best_sent
+                    explanation = f"Semantically inferred from candidate experience: '{best_sent[:120]}...' (semantic similarity: {int(best_sim*100)}%)."
+
             pref_scores.append(score)
             pref_evidences.append({
                 "skill_name": pref_name,
@@ -66,10 +120,21 @@ class MatchingEngine:
                 "explanation": explanation
             })
 
-        pref_score_avg = (sum(pref_scores) / len(pref_scores)) if pref_scores else 1.0
+        pref_score_avg = (sum(pref_scores) / len(pref_scores)) if pref_scores else 0.0
 
-        candidate_semantic_text = f"{candidate_profile.get('summary', '')} {' '.join(candidate_skills_list)}"
-        job_semantic_text = f"{job_data.get('title', '')} {job_data.get('raw_text', '')[:1000]}"
+        # Construct structured semantic text representations for dense bi-encoder
+        cand_summary = candidate_profile.get("summary") or candidate_profile.get("inferred_primary_role", "")
+        cand_skills_str = ", ".join(candidate_skills_list)
+        cand_highlights = " ".join([
+            f"{e.get('job_title', '')} at {e.get('company', '')}: {' '.join(e.get('key_achievements', [])[:2])}"
+            for e in candidate_profile.get("experiences", [])[:3]
+        ])
+        candidate_semantic_text = f"{cand_summary}. Technical competencies: {cand_skills_str}. {cand_highlights}".strip()
+
+        job_title = job_data.get("title", "")
+        job_reqs_str = ", ".join([r["canonical_name"] if isinstance(r, dict) else str(r) for r in req_skills_spec])
+        job_resps = " ".join(job_data.get("responsibilities", [])[:4])
+        job_semantic_text = f"{job_title}. Key Responsibilities: {job_resps}. Required Skills: {job_reqs_str}. {job_data.get('raw_text', '')[:1500]}".strip()
 
         cand_vec = embedding_engine.encode(candidate_semantic_text)
         job_vec = embedding_engine.encode(job_semantic_text)
@@ -97,15 +162,33 @@ class MatchingEngine:
                 project_scores.append(sim)
             project_score_avg = sum(project_scores) / len(project_scores)
         else:
-            project_score_avg = 0.50
+            project_score_avg = 0.0
+
+        # Dynamic weight redistribution to eliminate zero-component bias
+        active_weights = dict(self.weights)
+
+        if not pref_skills_spec:
+            # If job doesn't specify preferred skills, remove preferred dimension
+            active_weights["preferred_skills"] = 0.0
+
+        if not cand_projects:
+            # If candidate has no distinct project section, merge project weight into experience
+            active_weights["experience_relevance"] += active_weights["project_relevance"]
+            active_weights["project_relevance"] = 0.0
+
+        total_weight = sum(active_weights.values())
+        if total_weight > 0:
+            norm_weights = {k: v / total_weight for k, v in active_weights.items()}
+        else:
+            norm_weights = active_weights
 
         overall = (
-            self.weights["required_skills"] * req_score_avg +
-            self.weights["semantic_similarity"] * semantic_sim +
-            self.weights["experience_relevance"] * exp_ratio +
-            self.weights["preferred_skills"] * pref_score_avg +
-            self.weights["project_relevance"] * project_score_avg +
-            self.weights["education_match"] * edu_score
+            norm_weights["required_skills"] * req_score_avg +
+            norm_weights["semantic_similarity"] * semantic_sim +
+            norm_weights["experience_relevance"] * exp_ratio +
+            norm_weights["preferred_skills"] * pref_score_avg +
+            norm_weights["project_relevance"] * project_score_avg +
+            norm_weights["education_match"] * edu_score
         ) * 100.0
 
         overall_score = round(max(0.0, min(100.0, overall)), 1)
@@ -128,7 +211,7 @@ class MatchingEngine:
             "experience_score": round(exp_ratio * 100.0, 1),
             "project_score": round(project_score_avg * 100.0, 1),
             "education_score": round(edu_score * 100.0, 1),
-            "scoring_weights": self.weights,
+            "scoring_weights": norm_weights,
             "evidences": all_evidences,
             "synthesis_explanation": synthesis
         }
@@ -144,6 +227,7 @@ class MatchingEngine:
     ) -> str:
         direct_matches = [e["skill_name"] for e in evidences if e["match_status"] == MatchStatus.DIRECT_MATCH.value]
         transferable = [f"{e['skill_name']} (via {e['matched_candidate_skill']})" for e in evidences if e["match_status"] == MatchStatus.TRANSFERABLE_MATCH.value]
+        inferred = [e["skill_name"] for e in evidences if e["match_status"] == MatchStatus.INFERRED.value]
         missing_reqs = [e["skill_name"] for e in evidences if e["is_required"] and e["match_status"] == MatchStatus.MISSING.value]
 
         narrative_parts = []
@@ -167,6 +251,11 @@ class MatchingEngine:
         if transferable:
             narrative_parts.append(
                 f"**Transferable Expertise**: {', '.join(transferable[:4])}. The candidate has demonstrated adjacent competencies that provide a strong foundation."
+            )
+
+        if inferred:
+            narrative_parts.append(
+                f"**Inferred Competencies**: Semantic alignment identified for: {', '.join(inferred[:3])} based on experience context."
             )
 
         if missing_reqs:

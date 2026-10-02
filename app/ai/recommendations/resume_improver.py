@@ -30,6 +30,7 @@ class ResumeImprovementEngine:
         total_bullets_checked = 0
         strong_bullets_count = 0
 
+        candidate_skill_names = [s.get("canonical_name", "") for s in candidate_profile.get("skills", [])]
         experiences = candidate_profile.get("experiences", [])
         projects = candidate_profile.get("projects", [])
 
@@ -41,7 +42,7 @@ class ResumeImprovementEngine:
                     continue
 
                 total_bullets_checked += 1
-                item = cls._analyze_bullet(bullet, section=f"Experience at {company}")
+                item = cls._analyze_bullet(bullet, section=f"Experience at {company}", candidate_skills=candidate_skill_names)
                 if item:
                     suggestions.append(item)
                 else:
@@ -55,7 +56,7 @@ class ResumeImprovementEngine:
                 if len(bullet) < 15:
                     continue
                 total_bullets_checked += 1
-                item = cls._analyze_bullet(bullet, section=f"Project: {title}")
+                item = cls._analyze_bullet(bullet, section=f"Project: {title}", candidate_skills=candidate_skill_names)
                 if item:
                     suggestions.append(item)
                 else:
@@ -85,8 +86,9 @@ class ResumeImprovementEngine:
         }
 
     @classmethod
-    def _analyze_bullet(cls, bullet: str, section: str) -> Dict[str, Any] | None:
+    def _analyze_bullet(cls, bullet: str, section: str, candidate_skills: List[str] = None) -> Dict[str, Any] | None:
         bullet_lower = bullet.lower()
+        cand_skills = candidate_skills or []
 
         weak_verb_found = None
         for wv in cls.PASSIVE_WEAK_VERBS:
@@ -104,6 +106,7 @@ class ResumeImprovementEngine:
                 bullet,
                 flags=re.IGNORECASE
             )
+            audit = EvidenceGroundingValidator.validate_revision(bullet, revised, cand_skills)
             return {
                 "section": section,
                 "original_text": bullet,
@@ -111,18 +114,22 @@ class ResumeImprovementEngine:
                 "suggested_revision": revised,
                 "issue_type": "PASSIVE_VOICE",
                 "rationale": "Leading with strong technical action verbs immediately signals initiative and engineering competency.",
-                "interactive_prompt": "Can you provide the scale or impact? For example: What was the system's request volume, data size, or performance outcome?"
+                "interactive_prompt": "Can you provide the scale or impact? For example: What was the system's request volume, data size, or performance outcome?",
+                "grounding_audit": audit
             }
 
         elif not has_metrics and len(bullet) > 40:
+            suggested = f"{bullet} [Add quantifiable result/scale, e.g. reducing processing time or serving N users]."
+            audit = EvidenceGroundingValidator.validate_revision(bullet, suggested, cand_skills)
             return {
                 "section": section,
                 "original_text": bullet,
                 "critique": "Lacks quantifiable metrics or measurable business/engineering outcomes.",
-                "suggested_revision": f"{bullet} [Add quantifiable result/scale, e.g. reducing processing time or serving N users].",
+                "suggested_revision": suggested,
                 "issue_type": "WEAK_METRIC",
                 "rationale": "High-impact engineering resumes quantify scale, latency, accuracy, or efficiency gains rather than solely listing duties.",
-                "interactive_prompt": "What measurable metric did this project achieve? (e.g., 'reduced API response time from 350ms to 45ms', 'processed 500k daily records')"
+                "interactive_prompt": "What measurable metric did this project achieve? (e.g., 'reduced API response time from 350ms to 45ms', 'processed 500k daily records')",
+                "grounding_audit": audit
             }
 
         return None
@@ -137,4 +144,43 @@ class ResumeImprovementEngine:
             return f"Foundation established ({score}/100), but significant improvements can be made by replacing generic task descriptions with measurable engineering outcomes."
 
 
+class EvidenceGroundingValidator:
+    """
+    Guards against AI and LLM hallucinations by verifying that suggested
+    revisions and statements are strictly anchored in candidate evidence.
+    """
+    @classmethod
+    def validate_revision(
+        cls,
+        original_bullet: str,
+        suggested_revision: str,
+        candidate_skills: List[str]
+    ) -> Dict[str, Any]:
+        from app.ai.extraction.skill_extractor import skill_extractor
+
+        orig_skills = {s["canonical_name"].lower() for s in skill_extractor.extract_skills(original_bullet)}
+        rev_skills = {s["canonical_name"].lower() for s in skill_extractor.extract_skills(suggested_revision)}
+        cand_skill_set = {s.lower() for s in candidate_skills}
+
+        # Skills injected into revision that were neither in the original bullet nor in verified candidate skills
+        unanchored_skills = list(rev_skills - orig_skills - cand_skill_set)
+
+        # Numerical fabrication check:
+        # Detect numeric tokens in revised text not present in original bullet and not part of interactive prompt brackets [...]
+        clean_revision = re.sub(r"\[.*?\]", "", suggested_revision)
+        orig_numbers = set(re.findall(r"\b\d+(?:\.\d+)?%?\b", original_bullet))
+        rev_numbers = set(re.findall(r"\b\d+(?:\.\d+)?%?\b", clean_revision))
+        fabricated_numbers = list(rev_numbers - orig_numbers)
+
+        is_grounded = len(unanchored_skills) == 0 and len(fabricated_numbers) == 0
+
+        return {
+            "is_grounded": is_grounded,
+            "unanchored_skills": unanchored_skills,
+            "fabricated_numbers": fabricated_numbers,
+            "audit_verdict": "VERIFIED_GROUNDED" if is_grounded else "HALLUCINATION_DETECTED"
+        }
+
+
 resume_improver = ResumeImprovementEngine()
+evidence_grounding_validator = EvidenceGroundingValidator()
