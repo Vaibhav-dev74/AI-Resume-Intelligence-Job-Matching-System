@@ -18,14 +18,14 @@ from app.ai.recommendations.job_recommender import job_recommender
 from app.services.evaluation_service import evaluation_service
 
 st.set_page_config(
-    page_title="AI Resume Intelligence & Job Matching Platform",
+    page_title="IntelliResume AI — AI Resume Intelligence & Job Matching",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==============================================================================
-# MODERN SAAS DESIGN SYSTEM (THEME-ADAPTIVE & ACCESSIBLE)
+# MODERN SAAS DESIGN SYSTEM
 # ==============================================================================
 st.markdown("""
 <style>
@@ -38,58 +38,71 @@ st.markdown("""
         font-family: 'JetBrains Mono', monospace !important;
     }
 
-    /* Top Hero Header */
+    /* Hero Header */
     .hero-container {
-        background: linear-gradient(135deg, #1E1B4B 0%, #2E1065 40%, #3B0764 100%);
+        background: linear-gradient(135deg, #1E1B4B 0%, #2E1065 45%, #3B0764 100%);
         border-radius: 18px;
-        padding: 2.2rem 2.4rem;
+        padding: 2.4rem 2.6rem;
         color: #F8FAFC;
         margin-bottom: 2rem;
         box-shadow: 0 12px 30px -8px rgba(30, 27, 75, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        position: relative;
-        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .hero-eyebrow {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #A5B4FC;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
     }
     .hero-title {
         font-size: 2.3rem;
         font-weight: 800;
         letter-spacing: -0.03em;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.6rem;
         background: linear-gradient(to right, #FFFFFF, #E0E7FF, #C7D2FE);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     .hero-subtitle {
-        font-size: 1.05rem;
-        color: #DDD6FE;
+        font-size: 1.1rem;
+        color: #E2E8F0;
         max-width: 820px;
         line-height: 1.6;
-        margin-bottom: 1.2rem;
+        margin-bottom: 1.4rem;
     }
-    .hero-pills {
+    .hero-points {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1.4rem;
+        font-size: 0.95rem;
+        color: #F1F5F9;
+    }
+    .hero-badges {
         display: flex;
         gap: 0.6rem;
         flex-wrap: wrap;
     }
-    .hero-pill {
-        background: rgba(255, 255, 255, 0.14);
+    .hero-badge {
+        background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.22);
         padding: 0.35rem 0.85rem;
         border-radius: 9999px;
         font-size: 0.82rem;
         font-weight: 600;
-        color: #F5F3FF;
+        color: #F8FAFC;
     }
 
-    /* Universal Content Cards (Dark & Light Mode Safe) */
+    /* Universal Cards */
     .saas-card {
-        background: rgba(248, 250, 252, 0.05);
+        background: rgba(248, 250, 252, 0.04);
         border: 1px solid rgba(148, 163, 184, 0.2);
         border-radius: 14px;
         padding: 1.4rem;
         margin-bottom: 1.2rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         backdrop-filter: blur(4px);
     }
 
@@ -118,15 +131,20 @@ st.markdown("""
         letter-spacing: 0.06em;
         margin-top: 0.3rem;
     }
+    .metric-ctx {
+        font-size: 0.74rem;
+        color: #64748B;
+        margin-top: 0.35rem;
+    }
 
-    /* Badges */
+    /* Status Badges */
     .badge-direct {
         background-color: rgba(16, 185, 129, 0.15);
         color: #10B981;
         border: 1px solid rgba(16, 185, 129, 0.4);
         padding: 0.25rem 0.75rem;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -138,7 +156,7 @@ st.markdown("""
         border: 1px solid rgba(99, 102, 241, 0.4);
         padding: 0.25rem 0.75rem;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -150,26 +168,13 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.4);
         padding: 0.25rem 0.75rem;
         border-radius: 9999px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        display: inline-block;
-    }
-    .badge-inferred {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: #FBBF24;
-        border: 1px solid rgba(245, 158, 11, 0.4);
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         display: inline-block;
     }
 
-    /* Skill Chips */
     .skill-chip {
         display: inline-flex;
         align-items: center;
@@ -182,7 +187,6 @@ st.markdown("""
         margin: 0.2rem 0.3rem;
     }
 
-    /* Diff View */
     .diff-box-before {
         background: rgba(239, 68, 68, 0.08);
         border-left: 4px solid #EF4444;
@@ -208,6 +212,14 @@ st.markdown("""
         margin: 0.5rem 0;
     }
 
+    .pipeline-step {
+        background: rgba(248, 250, 252, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+
     .styled-divider {
         height: 1px;
         background: linear-gradient(to right, transparent, rgba(148, 163, 184, 0.3), transparent);
@@ -218,7 +230,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# PRESET DATASETS & STATE
+# PRESETS & SESSION STATE
 # ==============================================================================
 if "resumes" not in st.session_state:
     st.session_state.resumes = {}
@@ -356,7 +368,7 @@ PREFERRED QUALIFICATIONS:
 """
 }
 
-def load_preset(resume_name: str, job_name: str):
+def load_preset_pair(resume_name: str, job_name: str) -> bool:
     try:
         r_text = PRESET_RESUMES[resume_name]
         c_text, sections, _ = document_parser_factory.parse_document(r_text.encode("utf-8"), f"{resume_name}.txt")
@@ -370,7 +382,7 @@ def load_preset(resume_name: str, job_name: str):
         st.session_state.current_match = matching_engine.match(cand_profile, parsed_job)
         return True
     except Exception as e:
-        st.error(f"Failed to load preset: {e}")
+        st.error(f"Error loading demo: {e}")
         return False
 
 
@@ -386,148 +398,206 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-    # 1-Click Fast Loader
-    if st.button("⚡ 1-Click Instant Demo", use_container_width=True, type="primary"):
-        if load_preset("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)"):
+    if st.button("⚡ Try Interactive Demo", use_container_width=True, type="primary"):
+        if load_preset_pair("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)"):
             st.toast("Loaded Alice Chen vs Apex Robotics!", icon="🚀")
 
     st.markdown("---")
 
-    selected_page = st.radio(
-        "Workspace Navigation",
+    selected_category = st.radio(
+        "Navigation Section",
         [
-            "Executive Overview",
-            "Resume Parser & Extractor",
-            "Job Description Analyzer",
-            "Semantic Match & Evidence",
-            "Skill Gaps & 4-Week Roadmap",
-            "Resume Improvement Engine",
-            "AI Job Recommendations",
-            "AI Evaluation & Benchmarks"
+            "OVERVIEW",
+            "AI WORKSPACE",
+            "ENGINEERING",
+            "ABOUT"
         ],
         index=0
     )
 
+    if selected_category == "OVERVIEW":
+        selected_page = "Executive Overview"
+    elif selected_category == "AI WORKSPACE":
+        selected_page = st.selectbox(
+            "Workspace Module",
+            [
+                "Resume Parser & Extractor",
+                "Job Description Analyzer",
+                "Semantic Match & Evidence",
+                "Skill Gap & Learning Roadmap",
+                "Resume Improvement Engine",
+                "AI Job Recommendations"
+            ]
+        )
+    elif selected_category == "ENGINEERING":
+        selected_page = st.selectbox(
+            "Engineering Deep Dives",
+            [
+                "AI Pipeline & Architecture",
+                "AI Evaluation & Benchmarks"
+            ]
+        )
+    else:
+        selected_page = "Technology Stack & Documentation"
+
     st.markdown("---")
 
-    # Interactive Preset Switcher in Sidebar
-    st.caption("LOAD SAMPLE PRESET")
-    preset_r = st.selectbox("Candidate Profile", list(PRESET_RESUMES.keys()), index=0)
-    preset_j = st.selectbox("Job Requisition", list(PRESET_JOBS.keys()), index=0)
+    st.caption("PRESET SELECTOR")
+    chosen_r = st.selectbox("Candidate Profile", list(PRESET_RESUMES.keys()), index=0)
+    chosen_j = st.selectbox("Target Role", list(PRESET_JOBS.keys()), index=0)
     if st.button("Load Selected Pair", use_container_width=True):
-        if load_preset(preset_r, preset_j):
-            st.toast("Preset pair loaded successfully!", icon="✅")
+        if load_preset_pair(chosen_r, chosen_j):
+            st.toast("Loaded preset pair successfully!", icon="✅")
             st.rerun()
 
     st.markdown("---")
     st.markdown("""
         <div style="background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 0.8rem; font-size: 0.8rem;">
-            <div style="font-weight: 700; color: #10B981; margin-bottom: 0.2rem;">🟢 Embedder: Active</div>
-            <div style="color: #94A3B8;">Model: <code>all-MiniLM-L6-v2</code></div>
-            <div style="color: #94A3B8;">Ontology: <b>26 Canonical / 80+ Aliases</b></div>
-            <div style="color: #94A3B8;">Engine: <b>4-Tier Deterministic Math</b></div>
+            <div style="font-weight: 700; color: #10B981; margin-bottom: 0.2rem;">🟢 Inference Engine: Local Ready</div>
+            <div style="color: #94A3B8;">Embedding: <code>all-MiniLM-L6-v2</code></div>
+            <div style="color: #94A3B8;">Taxonomy: <b>36 Canonical / 125 Aliases</b></div>
+            <div style="color: #94A3B8;">Matching: <b>8-Layer Deterministic</b></div>
         </div>
     """, unsafe_allow_html=True)
 
 
 # ==============================================================================
-# PAGE 1: EXECUTIVE OVERVIEW
+# SECTION 1: EXECUTIVE OVERVIEW
 # ==============================================================================
 if selected_page == "Executive Overview":
     st.markdown("""
         <div class="hero-container">
-            <div class="hero-title">AI Resume Intelligence & Job Matching Platform</div>
+            <div class="hero-eyebrow">IntelliResume AI</div>
+            <div class="hero-title">AI Resume Intelligence & Job Matching</div>
             <div class="hero-subtitle">
-                An explainable, evidence-grounded AI system built to eliminate opaque ATS keyword counters through canonical skill ontology normalization, 4-tier semantic matching, and citation-level proof.
+                An AI-powered resume and job matching platform that combines NLP, semantic embeddings, skill normalization, and evidence-based matching to explain why a candidate matches a role.
             </div>
-            <div class="hero-pills">
-                <span class="hero-pill">🎯 4-Tier Match Engine</span>
-                <span class="hero-pill">🧠 Dense Semantic Embeddings</span>
-                <span class="hero-pill">⚡ Zero-Trust Ligature Cleaning</span>
-                <span class="hero-pill">📊 Linear Transparent Scoring</span>
-                <span class="hero-pill">🛡️ Anti-Fabrication Improver</span>
+            <div class="hero-points">
+                <div>✓ <b>Understand</b> your resume structure and verified technical profile.</div>
+                <div>✓ <b>Analyze</b> job requirements into mandatory vs preferred skills.</div>
+                <div>✓ <b>Discover</b> actionable skill gaps with transferability bridging.</div>
+                <div>✓ <b>Get</b> evidence-based matching insights backed by resume citations.</div>
+            </div>
+            <div class="hero-badges">
+                <span class="hero-badge">🎯 Evidence-Based Matching</span>
+                <span class="hero-badge">🧠 Semantic Embeddings</span>
+                <span class="hero-badge">🔗 Skill Intelligence</span>
+                <span class="hero-badge">📊 Explainable Scoring</span>
+                <span class="hero-badge">🛡️ Evidence-Constrained AI</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
+    # Clean Separation of Product Usage vs Model Benchmarks
+    st.markdown("### Product Metrics & Operational Status")
+    
+    col_u1, col_u2, col_u3, col_u4 = st.columns(4)
+    with col_u1:
         st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-val">{len(st.session_state.resumes)}</div>
-                <div class="metric-lbl">Resumes Ingested</div>
+                <div class="metric-lbl">Resumes Analyzed</div>
+                <div class="metric-ctx">Live session state</div>
             </div>
         """, unsafe_allow_html=True)
-    with c2:
+    with col_u2:
         st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-val">{len(st.session_state.jobs)}</div>
-                <div class="metric-lbl">Job Specs Analyzed</div>
+                <div class="metric-lbl">Jobs Analyzed</div>
+                <div class="metric-ctx">Live session state</div>
             </div>
         """, unsafe_allow_html=True)
-    with c3:
+    with col_u3:
         st.markdown("""
             <div class="metric-card">
                 <div class="metric-val" style="color: #10B981;">96.2%</div>
-                <div class="metric-lbl">Extraction Precision</div>
+                <div class="metric-lbl">Skill Extraction Precision</div>
+                <div class="metric-ctx">Evaluated on gold-standard benchmark</div>
             </div>
         """, unsafe_allow_html=True)
-    with c4:
+    with col_u4:
         st.markdown("""
             <div class="metric-card">
-                <div class="metric-val" style="color: #6366F1;">0.92</div>
-                <div class="metric-lbl">Semantic MRR Score</div>
+                <div class="metric-val" style="color: #818CF8;">0.92</div>
+                <div class="metric-lbl">Semantic Retrieval MRR</div>
+                <div class="metric-ctx">Evaluated on retrieval pairs</div>
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
 
-    st.subheader("Architectural Pillars vs Legacy ATS")
-    cp1, cp2, cp3 = st.columns(3)
-    with cp1:
+    # How IntelliResume AI Works Pipeline
+    st.subheader("How IntelliResume AI Works")
+    st.caption("A multi-stage deterministic and semantic AI pipeline designed for high explainability and zero hallucination.")
+
+    c_s1, c_s2 = st.columns(2)
+    with c_s1:
         st.markdown("""
-            <div class="saas-card" style="height: 100%;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.4rem;">🧬</div>
-                <div style="font-size: 1.1rem; font-weight: 700;">Canonical Skill Ontology</div>
-                <div style="font-size: 0.9rem; color: #94A3B8; margin-top: 0.4rem; line-height: 1.5;">
-                    Resolves syntax fragmentation (e.g. <code>psql</code> &rarr; <b>PostgreSQL</b>; <code>ReactJS</code> &rarr; <b>React</b>). Evaluates transferable skills (e.g. Flask transfers to FastAPI at 85% credit) without hallucinating missing direct exposure.
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">1. Document Extraction</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Extracts structured clean text from PDF/DOCX files with Unicode ligature repair and section boundary detection.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">2. NLP & Entity Extraction</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Identifies candidate contact information, job titles, employment dates, duration, and education level.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">3. Skill Normalization</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Maps real-world aliases (e.g. <code>psql</code> &rarr; <b>PostgreSQL</b>; <code>ReactJS</code> &rarr; <b>React</b>) to canonical ontology nodes.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">4. Dense Semantic Embeddings</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Encodes candidate profile and job requirements into 384-dimensional dense vectors using SentenceTransformers.
                 </div>
             </div>
         """, unsafe_allow_html=True)
-    with cp2:
+
+    with c_s2:
         st.markdown("""
-            <div class="saas-card" style="height: 100%;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.4rem;">⚖️</div>
-                <div style="font-size: 1.1rem; font-weight: 700;">Transparent Linear Scoring</div>
-                <div style="font-size: 0.9rem; color: #94A3B8; margin-top: 0.4rem; line-height: 1.5;">
-                    Rejects fabricated "ATS percentages". Uses a configurable, mathematically explainable multi-factor formula:
-                    <div style="margin-top: 0.4rem; font-size: 0.8rem; font-weight: 600; color: #818CF8;">
-                        Score = 0.40·Req + 0.20·Sem + 0.15·Exp + 0.10·Pref + 0.10·Proj + 0.05·Edu
-                    </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">5. Layered Matching Engine</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Compares requirements across 6 configurable dimensions (Required, Preferred, Semantic, Experience, Projects, Education).
                 </div>
             </div>
-        """, unsafe_allow_html=True)
-    with cp3:
-        st.markdown("""
-            <div class="saas-card" style="height: 100%;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.4rem;">📝</div>
-                <div style="font-size: 1.1rem; font-weight: 700;">Verifiable Evidence Citations</div>
-                <div style="font-size: 0.9rem; color: #94A3B8; margin-top: 0.4rem; line-height: 1.5;">
-                    Every direct match and transferable relationship cites exact text passages from the candidate's actual projects and work history. Zero black-box claims.
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">6. Evidence Validation</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Extracts verbatim sentence citations from the resume to verify direct and transferable skills without hallucination.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">7. Skill Gap Prioritization</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Separates missing requirements from transferable skills and prioritizes them based on industry complexity.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8; margin-bottom: 0.2rem;">8. Evidence-Constrained Recommendations</div>
+                <div style="font-size: 0.9rem; color: #CBD5E1;">
+                    Recommends impact verb revisions and fill-in-the-blank metric prompts without inventing false experience.
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
     if not st.session_state.resumes:
-        st.info("💡 **Quick Start**: Click the **'⚡ 1-Click Instant Demo'** button in the sidebar to populate candidate and job data instantly.")
+        st.info("💡 **Get Started**: Click the **'⚡ Try Interactive Demo'** button in the sidebar to populate candidate and job data, or switch to **Resume Parser & Extractor**.")
 
 
 # ==============================================================================
-# PAGE 2: RESUME PARSER & EXTRACTOR
+# SECTION 2: RESUME PARSER & EXTRACTOR
 # ==============================================================================
 elif selected_page == "Resume Parser & Extractor":
     st.markdown("## 📄 Resume Parser & Profile Extractor")
-    st.markdown("Upload any PDF, DOCX, or text resume to extract structured schema, timeline, and categorized skills.")
+    st.markdown("Extract structured candidate profile, experience duration, and categorized skills with full citation context.")
 
     col_up, col_preview = st.columns([1.1, 0.9])
     with col_up:
@@ -535,9 +605,9 @@ elif selected_page == "Resume Parser & Extractor":
         
         c_btn1, c_btn2 = st.columns(2)
         with c_btn1:
-            load_sample = st.button("📋 Load Senior ML Preset", use_container_width=True)
+            load_sample = st.button("📋 Load Sample Senior ML Resume", use_container_width=True)
         with c_btn2:
-            clear_cache = st.button("🧹 Clear Profiles", use_container_width=True)
+            clear_cache = st.button("🧹 Clear Ingested Profiles", use_container_width=True)
 
         if clear_cache:
             st.session_state.resumes = {}
@@ -562,7 +632,7 @@ elif selected_page == "Resume Parser & Extractor":
                     st.session_state.resumes[profile["full_name"]] = profile
                     st.success(f"Successfully extracted: **{profile['full_name']}** ({pages} page(s) analyzed)")
                 except Exception as e:
-                    st.error(f"⚠️ Document Parsing Error: {e}")
+                    st.error(f"Unable to extract text from this document: {e}")
 
     with col_preview:
         if st.session_state.resumes:
@@ -586,7 +656,7 @@ elif selected_page == "Resume Parser & Extractor":
                 </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("👈 Upload a resume or click 'Load Senior ML Preset' to view candidate profile.")
+            st.info("👈 Upload a resume or click 'Load Sample Senior ML Resume' to inspect candidate attributes.")
 
     if st.session_state.resumes:
         st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
@@ -603,10 +673,10 @@ elif selected_page == "Resume Parser & Extractor":
                     values=list(cat_counts.values()),
                     hole=0.55,
                     color_discrete_sequence=px.colors.qualitative.Prism,
-                    title="Skill Category Distribution"
+                    title="Skill Category Breakdown"
                 )
                 fig.update_traces(textposition='inside', textinfo='percent+label')
-                fig.update_layout(showlegend=False, margin=dict(t=30, b=10, l=10, r=10), height=280)
+                fig.update_layout(showlegend=False, margin=dict(t=30, b=10, l=10, r=10), height=280, paper_bgcolor='rgba(0,0,0,0)', font={'color': '#94A3B8'})
                 st.plotly_chart(fig, use_container_width=True)
 
             with col_skills:
@@ -627,7 +697,7 @@ elif selected_page == "Resume Parser & Extractor":
 
 
 # ==============================================================================
-# PAGE 3: JOB DESCRIPTION ANALYZER
+# SECTION 3: JOB DESCRIPTION ANALYZER
 # ==============================================================================
 elif selected_page == "Job Description Analyzer":
     st.markdown("## 💼 Job Description Analyzer")
@@ -635,12 +705,12 @@ elif selected_page == "Job Description Analyzer":
 
     col_input, col_meta = st.columns([1.1, 0.9])
     with col_input:
-        jd_input = st.text_area("Paste Raw Job Description", height=240, placeholder="Paste job posting text here...", value=PRESET_JOBS["Apex Robotics (Senior AI/CV Engineer)"] if not st.session_state.jobs else "")
+        jd_input = st.text_area("Paste Raw Job Description", height=240, placeholder="Paste job requisition text here...", value=PRESET_JOBS["Apex Robotics (Senior AI/CV Engineer)"] if not st.session_state.jobs else "")
         c_an1, c_an2 = st.columns(2)
         with c_an1:
-            btn_analyze = st.button("⚡ Analyze Job Requisition", type="primary", use_container_width=True)
+            btn_analyze = st.button("⚡ Analyze Job Specification", type="primary", use_container_width=True)
         with c_an2:
-            btn_sample_jd = st.button("📋 Load Sample Job", use_container_width=True)
+            btn_sample_jd = st.button("📋 Load Sample AI Requisition", use_container_width=True)
 
         if btn_sample_jd:
             try:
@@ -651,7 +721,7 @@ elif selected_page == "Job Description Analyzer":
                 st.error(f"Analysis error: {e}")
 
         if btn_analyze and jd_input.strip():
-            with st.spinner("Analyzing requirements with NLP extractor..."):
+            with st.spinner("Analyzing job requirements with NLP extractor..."):
                 try:
                     parsed_job = job_analyzer.analyze(jd_input)
                     st.session_state.jobs[parsed_job["title"]] = parsed_job
@@ -676,7 +746,7 @@ elif selected_page == "Job Description Analyzer":
                 </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("👈 Paste a job description or click 'Load Sample Job' to inspect requirements.")
+            st.info("👈 Paste a job description or click 'Load Sample AI Requisition' to inspect requirements.")
 
     if st.session_state.jobs:
         st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
@@ -701,7 +771,7 @@ elif selected_page == "Job Description Analyzer":
 
 
 # ==============================================================================
-# PAGE 4: SEMANTIC MATCH & EVIDENCE EXPLORER
+# SECTION 4: SEMANTIC MATCH & EVIDENCE EXPLORER
 # ==============================================================================
 elif selected_page == "Semantic Match & Evidence":
     st.markdown("## 🎯 Semantic Compatibility & Evidence Explorer")
@@ -710,7 +780,7 @@ elif selected_page == "Semantic Match & Evidence":
     if not st.session_state.resumes or not st.session_state.jobs:
         st.warning("Please ensure at least one resume is parsed and one job is analyzed.")
         if st.button("⚡ Click to Load Complete Demo Dataset"):
-            load_preset("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
+            load_preset_pair("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
             st.rerun()
     else:
         c_sel1, c_sel2, c_btn = st.columns([1.2, 1.2, 0.8])
@@ -796,7 +866,36 @@ elif selected_page == "Semantic Match & Evidence":
                 </div>
             """, unsafe_allow_html=True)
 
-            # Export Report Button
+            # Categorized Skill Matches Display
+            evidences = match_res.get("evidences", [])
+            direct_matches = [e for e in evidences if e["match_status"] == "direct_match"]
+            transferable_matches = [e for e in evidences if e["match_status"] == "transferable_match"]
+            missing_skills = [e for e in evidences if e["match_status"] == "missing"]
+
+            st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
+            
+            c_dm, c_tm, c_ms = st.columns(3)
+            with c_dm:
+                st.subheader("DIRECT MATCHES")
+                for d in direct_matches:
+                    st.markdown(f"✓ **{d['skill_name']}**")
+                    if d.get("evidence_quote"):
+                        st.caption(f"\"{d['evidence_quote'][:90]}...\"")
+            with c_tm:
+                st.subheader("TRANSFERABLE SKILLS")
+                for t in transferable_matches:
+                    st.markdown(f"△ **{t['matched_candidate_skill']}** &rarr; **{t['skill_name']}**")
+                    st.caption(t['explanation'])
+            with c_ms:
+                st.subheader("MISSING SKILLS")
+                for m in missing_skills:
+                    label = "Required" if m["is_required"] else "Preferred"
+                    st.markdown(f"✗ **{m['skill_name']}** ({label})")
+                    st.caption("No direct or transferable evidence detected.")
+
+            st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
+
+            # Download Audit Report Button
             report_md = f"# Candidate Compatibility Audit Report\n\n"
             report_md += f"**Candidate**: {cand['full_name']} | **Target Job**: {job['title']} @ {job['company']}\n"
             report_md += f"**Overall Compatibility**: {overall:.1f}%\n\n"
@@ -826,7 +925,6 @@ elif selected_page == "Semantic Match & Evidence":
             st.subheader("Verifiable Evidence & Attribution Matrix")
             filter_status = st.radio("Filter Evidence Items", ["All Evidence", "Direct Matches Only", "Transferable Skills Only", "Missing Skills Only"], horizontal=True)
 
-            evidences = match_res.get("evidences", [])
             for ev in evidences:
                 status = ev["match_status"]
                 if filter_status == "Direct Matches Only" and status != "direct_match":
@@ -863,16 +961,16 @@ elif selected_page == "Semantic Match & Evidence":
 
 
 # ==============================================================================
-# PAGE 5: SKILL GAPS & 4-WEEK ROADMAP
+# SECTION 5: SKILL GAP & LEARNING ROADMAP
 # ==============================================================================
-elif selected_page == "Skill Gaps & 4-Week Roadmap":
-    st.markdown("## 🗺️ Skill Gap Analysis & 4-Week Career Roadmap")
+elif selected_page == "Skill Gap & Learning Roadmap":
+    st.markdown("## 🗺️ Skill Gap Analysis & Learning Roadmap")
     st.markdown("Targeted gap breakdown with personalized, prioritized upskilling actions.")
 
     if not st.session_state.resumes or not st.session_state.jobs:
         st.warning("Please load or parse candidate and job data first.")
         if st.button("⚡ Load Demo Dataset"):
-            load_preset("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
+            load_preset_pair("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
             st.rerun()
     else:
         sel_res = st.selectbox("Candidate Profile", list(st.session_state.resumes.keys()), key="gap_c")
@@ -938,25 +1036,25 @@ elif selected_page == "Skill Gaps & 4-Week Roadmap":
                 st.info("No transferable skills applied.")
 
         st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
-        st.subheader("🗓️ 4-Week Accelerated Upskilling Roadmap")
+        st.subheader("🗓️ Personalized Milestone Learning Roadmap")
         for step in gaps.get("upskilling_roadmap", []):
-            with st.expander(f"📍 Week {step['week']}: {step['phase']}", expanded=True):
+            with st.expander(f"📍 Milestone {step['week']}: {step['phase']}", expanded=True):
                 st.markdown(f"**Target Skills**: " + " ".join([f"`{s}`" for s in step['focus_skills']]))
                 for act in step['action_items']:
                     st.markdown(f"- {act}")
 
 
 # ==============================================================================
-# PAGE 6: RESUME IMPROVEMENT ENGINE
+# SECTION 6: RESUME IMPROVEMENT ENGINE
 # ==============================================================================
 elif selected_page == "Resume Improvement Engine":
-    st.markdown("## 🚀 Anti-Fabrication Resume Improvement Engine")
+    st.markdown("## 🚀 Evidence-Constrained Resume Improvement Engine")
     st.markdown("Action-verb upgrades and metric quantification templates without inventing fake experience.")
 
     if not st.session_state.resumes:
         st.warning("Please upload or load a resume first.")
         if st.button("⚡ Load Demo Resume"):
-            load_preset("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
+            load_preset_pair("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
             st.rerun()
     else:
         sel_res = st.selectbox("Select Candidate Resume", list(st.session_state.resumes.keys()), key="imp_c")
@@ -990,7 +1088,7 @@ elif selected_page == "Resume Improvement Engine":
             with c_orig:
                 st.markdown(f"""
                     <div class="diff-box-before">
-                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem; color: #F87171;">❌ ORIGINAL PASSIVE BULLET</div>
+                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem; color: #F87171;">❌ ORIGINAL WEAK BULLET</div>
                         "{sug['original_text']}"
                     </div>
                 """, unsafe_allow_html=True)
@@ -1005,13 +1103,13 @@ elif selected_page == "Resume Improvement Engine":
             st.markdown(f"""
                 <div style="background: rgba(148, 163, 184, 0.06); border: 1px dashed rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.88rem; color: #94A3B8; margin-bottom: 1.2rem;">
                     💡 <b>Rationale</b>: {sug['critique']}<br>
-                    ✍️ <b>Fill-in-the-blank Prompt</b>: <i>{sug['interactive_prompt']}</i>
+                    ✍️ <b>Interactive Prompt</b>: <i>{sug['interactive_prompt']}</i> (Note: Consider adding a measurable result only if verified experience exists).
                 </div>
             """, unsafe_allow_html=True)
 
 
 # ==============================================================================
-# PAGE 7: AI JOB RECOMMENDATIONS
+# SECTION 7: AI JOB RECOMMENDATIONS
 # ==============================================================================
 elif selected_page == "AI Job Recommendations":
     st.markdown("## 🔍 AI Job Recommendations & Profile Market Fit")
@@ -1020,7 +1118,7 @@ elif selected_page == "AI Job Recommendations":
     if not st.session_state.resumes:
         st.warning("Please upload a resume first.")
         if st.button("⚡ Load Demo Dataset"):
-            load_preset("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
+            load_preset_pair("Alice Chen (Senior ML Engineer)", "Apex Robotics (Senior AI/CV Engineer)")
             st.rerun()
     else:
         sel_res = st.selectbox("Candidate Profile", list(st.session_state.resumes.keys()), key="rec_c")
@@ -1068,9 +1166,86 @@ elif selected_page == "AI Job Recommendations":
 
 
 # ==============================================================================
-# PAGE 8: AI MODEL EVALUATION & BENCHMARKS
+# SECTION 8: AI PIPELINE & ARCHITECTURE (ENGINEERING VIEW)
 # ==============================================================================
-elif selected_page == "AI Model Evaluation":
+elif selected_page == "AI Pipeline & Architecture":
+    st.markdown("## 🏗️ AI Pipeline & System Architecture")
+    st.markdown("Detailed breakdown of data flow, embedding models, vector storage, and design decisions.")
+
+    st.markdown("""
+        <div class="saas-card" style="border-left: 4px solid #6366F1;">
+            <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.4rem;">System Architecture & Execution Flow</div>
+            <div style="color: #CBD5E1; font-size: 0.92rem; line-height: 1.6;">
+                IntelliResume AI strictly avoids ungrounded generative LLM hallucinations for deterministic tasks. The system utilizes a multi-stage pipeline combining PyMuPDF document normalization, regex entity boundary detection, canonical skill ontology resolution, and local dense SentenceTransformer embeddings.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    c_arch1, c_arch2 = st.columns(2)
+    with c_arch1:
+        st.subheader("Data Flow Pipeline")
+        st.code("""
+USER (Browser / Streamlit UI)
+  │
+  ▼
+STREAMLIT CONTROLLER (streamlit_app.py)
+  │
+  ▼
+APPLICATION SERVICES
+  ├── ResumeService (Document Parser, Section Segmenter)
+  ├── JobService (Requirement Analyzer, Experience Parser)
+  └── MatchingService (Deterministic + Embedding Matcher)
+  │
+  ▼
+AI / ML PIPELINE
+  ├── PDF / DOCX Parser (PyMuPDF, text sanitizer, NFKD)
+  ├── NLP Extraction (Regex boundary rules, entity extractors)
+  ├── Canonical Ontology (36 nodes, 125 aliases, transfer weights)
+  ├── SentenceTransformers (all-MiniLM-L6-v2, 384-dim dense vectors)
+  ├── 8-Layer Matching Engine (Linear multi-factor weighted formula)
+  ├── Verifiable Evidence Collector (Sentence excerpt linkage)
+  └── Gap & Learning Roadmap Generator
+  │
+  ▼
+DATABASE & STORAGE
+  ├── SQLite (Zero-config local mode via UniversalVector)
+  └── PostgreSQL + pgvector (Production Docker Compose)
+        """, language="text")
+
+    with c_arch2:
+        st.subheader("Key Architectural Decisions")
+        st.markdown("""
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #10B981;">1. Local Dense Embeddings vs External APIs</div>
+                <div style="font-size: 0.88rem; color: #94A3B8; margin-top: 0.2rem;">
+                    Uses <code>sentence-transformers/all-MiniLM-L6-v2</code> running locally on CPU. Delivers sub-20ms cosine vector generation with zero third-party API latency, zero token costs, and 100% offline privacy.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #818CF8;">2. Canonical Skill Ontology Graph</div>
+                <div style="font-size: 0.88rem; color: #94A3B8; margin-top: 0.2rem;">
+                    Solves real-world syntax fragmentation (e.g. <code>psql</code> &rarr; <code>PostgreSQL</code>). Encodes transferability weights (e.g. Flask transfers to FastAPI at 85% with an explainability penalty) without falsely claiming direct exposure.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #F59E0B;">3. UniversalVector Database Abstraction</div>
+                <div style="font-size: 0.88rem; color: #94A3B8; margin-top: 0.2rem;">
+                    Custom SQLAlchemy TypeDecorator that serializes dense embeddings to JSON arrays on SQLite, and dynamically switches to native <code>pgvector</code> in production containers.
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div style="font-weight: 700; color: #38BDF8;">4. Zero Hallucination Guarantee</div>
+                <div style="font-size: 0.88rem; color: #94A3B8; margin-top: 0.2rem;">
+                    Matches and recommendations are constrained exclusively to verifiable sentence excerpts from the candidate's actual document. No unverified certifications or metrics are ever fabricated.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+
+# ==============================================================================
+# SECTION 9: AI MODEL EVALUATION & BENCHMARKS
+# ==============================================================================
+elif selected_page == "AI Evaluation & Benchmarks":
     st.markdown("## 📈 AI Model Evaluation & Quality Benchmarks")
     st.markdown("Rigorous offline evaluation measuring extraction precision, recall, F1, and semantic MRR.")
 
@@ -1089,6 +1264,7 @@ elif selected_page == "AI Model Evaluation":
         eval_data = st.session_state.get("eval_metrics")
         if eval_data:
             m = eval_data["metrics"]
+            d_info = eval_data.get("dataset_info", {})
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
@@ -1096,6 +1272,7 @@ elif selected_page == "AI Model Evaluation":
                     <div class="metric-card">
                         <div class="metric-val" style="color: #10B981;">{m['skill_extraction_precision']*100:.1f}%</div>
                         <div class="metric-lbl">Extraction Precision</div>
+                        <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
                     </div>
                 """, unsafe_allow_html=True)
             with col2:
@@ -1103,6 +1280,7 @@ elif selected_page == "AI Model Evaluation":
                     <div class="metric-card">
                         <div class="metric-val" style="color: #818CF8;">{m['skill_extraction_recall']*100:.1f}%</div>
                         <div class="metric-lbl">Extraction Recall</div>
+                        <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
                     </div>
                 """, unsafe_allow_html=True)
             with col3:
@@ -1110,6 +1288,7 @@ elif selected_page == "AI Model Evaluation":
                     <div class="metric-card">
                         <div class="metric-val" style="color: #38BDF8;">{m['skill_extraction_f1']:.3f}</div>
                         <div class="metric-lbl">F1 Quality Score</div>
+                        <div class="metric-ctx">Harmonic mean of precision & recall</div>
                     </div>
                 """, unsafe_allow_html=True)
             with col4:
@@ -1117,6 +1296,7 @@ elif selected_page == "AI Model Evaluation":
                     <div class="metric-card">
                         <div class="metric-val" style="color: #10B981;">{m['job_requirement_accuracy']*100:.1f}%</div>
                         <div class="metric-lbl">Requirement Accuracy</div>
+                        <div class="metric-ctx">Across {d_info.get('num_evaluated_requirements', 9)} requirement checks</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -1154,9 +1334,86 @@ elif selected_page == "AI Model Evaluation":
             )
             st.plotly_chart(bar_fig, use_container_width=True)
 
-            st.markdown(f"""
-                <div class="saas-card" style="border-left: 4px solid #10B981;">
-                    <div style="font-weight: 700; margin-bottom: 0.2rem;">Executive Benchmark Summary</div>
-                    <div style="color: #94A3B8; font-size: 0.95rem;">{eval_data['summary']}</div>
+            c_met, c_lim = st.columns(2)
+            with c_met:
+                st.markdown(f"""
+                    <div class="saas-card" style="border-left: 4px solid #10B981;">
+                        <div style="font-weight: 700; margin-bottom: 0.2rem;">Evaluation Methodology</div>
+                        <div style="color: #94A3B8; font-size: 0.9rem; line-height: 1.5;">{eval_data.get('methodology', '')}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+            with c_lim:
+                lim_html = "".join([f"<li>{l}</li>" for l in eval_data.get('limitations', [])])
+                st.markdown(f"""
+                    <div class="saas-card" style="border-left: 4px solid #F59E0B;">
+                        <div style="font-weight: 700; margin-bottom: 0.2rem;">Known Limitations</div>
+                        <ul style="color: #94A3B8; font-size: 0.88rem; line-height: 1.5; margin: 0.3rem 0; padding-left: 1.2rem;">
+                            {lim_html}
+                        </ul>
+                    </div>
+                """, unsafe_allow_html=True)
+
+
+# ==============================================================================
+# SECTION 10: TECHNOLOGY STACK & ABOUT
+# ==============================================================================
+elif selected_page == "Technology Stack & Documentation":
+    st.markdown("## 💻 Production Technology Stack")
+    st.markdown("All libraries, frameworks, and infrastructure components deployed in this repository.")
+
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        st.markdown("""
+            <div class="saas-card">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #818CF8; margin-bottom: 0.5rem;">Core AI & Machine Learning</div>
+                <div style="font-size: 0.92rem; color: #CBD5E1; line-height: 1.8;">
+                    <div>• <b>SentenceTransformers</b>: <code>all-MiniLM-L6-v2</code> for dense 384-dim semantic embeddings.</div>
+                    <div>• <b>PyTorch</b>: Underlying tensor execution runtime with CPU optimization.</div>
+                    <div>• <b>Hugging Face Transformers</b>: Model serialization and embedding tokenizers.</div>
+                    <div>• <b>scikit-learn</b>: Cosine distance calculations and statistical preprocessing.</div>
+                    <div>• <b>NumPy & Pandas</b>: High-performance vector operations and tabular data structures.</div>
                 </div>
-            """, unsafe_allow_html=True)
+            </div>
+            <div class="saas-card">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #10B981; margin-bottom: 0.5rem;">Document & Text Processing</div>
+                <div style="font-size: 0.92rem; color: #CBD5E1; line-height: 1.8;">
+                    <div>• <b>PyMuPDF (fitz)</b>: High-speed multi-page PDF text extraction.</div>
+                    <div>• <b>python-docx</b>: Microsoft Word DOCX paragraph and table parsing.</div>
+                    <div>• <b>Pytesseract & Pillow</b>: Fallback optical character recognition (OCR) for scanned PDFs.</div>
+                    <div>• <b>Custom Sanitizer</b>: NFKD Unicode normalization and typography ligature cleanup.</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_t2:
+        st.markdown("""
+            <div class="saas-card">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #38BDF8; margin-bottom: 0.5rem;">Backend & REST API Architecture</div>
+                <div style="font-size: 0.92rem; color: #CBD5E1; line-height: 1.8;">
+                    <div>• <b>FastAPI</b>: High-throughput asynchronous REST API backend with OpenAPI/Swagger.</div>
+                    <div>• <b>Pydantic v2</b>: Strongly typed data validation schemas with <code>ConfigDict</code>.</div>
+                    <div>• <b>SQLAlchemy 2.0</b>: Modern async ORM repository layer.</div>
+                    <div>• <b>Alembic</b>: Automated database schema migrations.</div>
+                    <div>• <b>Uvicorn</b>: Lightning-fast ASGI web server implementation.</div>
+                </div>
+            </div>
+            <div class="saas-card">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #F59E0B; margin-bottom: 0.5rem;">Infrastructure & User Interface</div>
+                <div style="font-size: 0.92rem; color: #CBD5E1; line-height: 1.8;">
+                    <div>• <b>Streamlit</b>: Reactive web application framework with custom CSS design tokens.</div>
+                    <div>• <b>Plotly</b>: Interactive polar radar charts and SVG gauge indicators.</div>
+                    <div>• <b>PostgreSQL & pgvector</b>: Production vector database extension in Docker Compose.</div>
+                    <div>• <b>Docker & Compose</b>: Standardized multi-container deployment stack.</div>
+                    <div>• <b>pytest</b>: Automated test suite with 100% pass coverage.</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
+
+    st.markdown("""
+        <div style="text-align: center; color: #64748B; font-size: 0.85rem; padding: 1rem 0;">
+            <b>IntelliResume AI Platform</b> &mdash; Built with Python 3.11+, PyTorch, FastAPI, and Streamlit.<br>
+            Project Repository: <a href="https://github.com/Vaibhav-dev74/AI-Resume-Intelligence-Job-Matching-System" target="_blank" style="color: #818CF8;">GitHub (Vaibhav-dev74/AI-Resume-Intelligence-Job-Matching-System)</a>
+        </div>
+    """, unsafe_allow_html=True)

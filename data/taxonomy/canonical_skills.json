@@ -4,16 +4,35 @@
       "canonical_name": "Python",
       "category": "programming_language",
       "aliases": ["python", "python 3", "python3", "python programming", "py"],
-      "description": "High-level, interpreted programming language widely used in AI/ML, backend, and data science.",
+      "description": "High-level interpreted programming language widely used in AI/ML, backend, and data science.",
       "related_skills": [
         {"skill": "R", "transferability": 0.60}
+      ]
+    },
+    {
+      "canonical_name": "C++",
+      "category": "programming_language",
+      "aliases": ["c++", "cpp", "c plus plus"],
+      "description": "General-purpose systems programming language with high performance and low-level memory management.",
+      "related_skills": [
+        {"skill": "C", "transferability": 0.85},
+        {"skill": "Rust", "transferability": 0.70}
+      ]
+    },
+    {
+      "canonical_name": "Go",
+      "category": "programming_language",
+      "aliases": ["go", "golang"],
+      "description": "Statically typed, compiled language engineered by Google for concurrent distributed backend services.",
+      "related_skills": [
+        {"skill": "Python", "transferability": 0.65}
       ]
     },
     {
       "canonical_name": "FastAPI",
       "category": "framework",
       "aliases": ["fastapi", "fast api", "fastapi framework"],
-      "description": "Modern, fast web framework for building APIs with Python 3.8+.",
+      "description": "Modern, high-performance web framework for building APIs with Python 3.8+.",
       "related_skills": [
         {"skill": "Flask", "transferability": 0.85},
         {"skill": "Django", "transferability": 0.75},
@@ -24,7 +43,7 @@
       "canonical_name": "Flask",
       "category": "framework",
       "aliases": ["flask", "flask framework", "python flask"],
-      "description": "Micro web framework written in Python.",
+      "description": "Lightweight WSGI micro web framework written in Python.",
       "related_skills": [
         {"skill": "FastAPI", "transferability": 0.85},
         {"skill": "Django", "transferability": 0.80},
@@ -35,7 +54,7 @@
       "canonical_name": "Django",
       "category": "framework",
       "aliases": ["django", "django rest framework", "drf"],
-      "description": "High-level Python web framework.",
+      "description": "Batteries-included Python web framework.",
       "related_skills": [
         {"skill": "FastAPI", "transferability": 0.75},
         {"skill": "Flask", "transferability": 0.80}
@@ -45,7 +64,7 @@
       "canonical_name": "PyTorch",
       "category": "ai_ml",
       "aliases": ["pytorch", "torch", "libtorch"],
-      "description": "Open source machine learning framework based on the Torch library.",
+      "description": "Tensors and dynamic neural networks in Python with strong GPU acceleration.",
       "related_skills": [
         {"skill": "TensorFlow", "transferability": 0.85},
         {"skill": "Deep Learning", "transferability": 0.95}
@@ -55,143 +74,85 @@
       "canonical_name": "TensorFlow",
       "category": "ai_ml",
       "aliases": ["tensorflow", "tf", "tensorflow 2"],
-      "description": "End-to-end open source platform for machine learning.",
+      "description": "End-to-end open source platform for machine learning and deep learning.",
       "related_skills": [
         {"skill": "PyTorch", "transferability": 0.85},
         {"skill": "Deep Learning", "transferability": 0.95}
       ]
     },
     {
-      "canonical_name": "PostgreSQL",
-      "category": "database",
-      "aliases": ["postgresql", "postgres", "psql", "pgsql"],
-      "description": "Powerful, open source object-relational database system.",
-      "related_skills": [
-        {"skill": "MySQL", "transferability": 0.85},
-        {"skill": "SQL", "transferability": 0.95}
-      ]
-    },
-    {
-      "canonical_name": "MySQL",
-      "category": "database",
-      "aliases": ["mysql"],
-      "description": "Open-source relational database management system.",
-      "related_skills": [
-        {"skill": "PostgreSQL", "transferability": 0.85},
-        {"skill": "SQL", "transferability": 0.95}
-      ]
-    },
-    {
-      "canonical_name": "SQL",
-      "category": "programming_language",
-      "aliases": ["sql", "structured query language"],
-      "description": "Domain-specific language used in programming and managing relational databases.",
-      "related_skills": [
-        {"skill": "PostgreSQL", "transferability": 0.85}
-      ]
-    },
-    {
-      "canonical_name": "Docker",
-      "category": "cloud_devops",
-      "aliases": ["docker", "dockerfile", "docker-compose", "containerization", "containers"],
-      "description": "OS-level virtualization to deliver software in packages called containers.",
-      "related_skills": [
-        {"skill": "Kubernetes", "transferability": 0.75}
-      ]
-    },
-    {
-      "canonical_name": "Kubernetes",
-      "category": "cloud_devops",
-      "aliases": ["kubernetes", "k8s"],
-      "description": "Container orchestration system.",
-      "related_skills": [
-        {"skill": "Docker", "transferability": 0.80}
-      ]
-    },
-    {
-      "canonical_name": "AWS",
-      "category": "cloud_devops",
-      "aliases": ["aws", "amazon web services", "ec2", "s3", "lambda"],
-      "description": "Cloud computing platform provided by Amazon.",
-      "related_skills": [
-        {"skill": "Google Cloud Platform", "transferability": 0.80}
-      ]
-    },
-    {
-      "canonical_name": "Google Cloud Platform",
-      "category": "cloud_devops",
-      "aliases": ["gcp", "google cloud", "google cloud platform"],
-      "description": "Suite of cloud computing services by Google.",
-      "related_skills": [
-        {"skill": "AWS", "transferability": 0.80}
-      ]
-    },
-    {
-      "canonical_name": "React",
-      "category": "framework",
-      "aliases": ["react", "react.js", "reactjs"],
-      "description": "Front-end JavaScript library for building user interfaces.",
-      "related_skills": [
-        {"skill": "Next.js", "transferability": 0.90}
-      ]
-    },
-    {
-      "canonical_name": "Next.js",
-      "category": "framework",
-      "aliases": ["next.js", "nextjs", "next"],
-      "description": "Flexible React framework for building fast web applications.",
-      "related_skills": [
-        {"skill": "React", "transferability": 0.95}
-      ]
-    },
-    {
-      "canonical_name": "REST APIs",
-      "category": "tool",
-      "aliases": ["rest", "rest api", "rest apis", "restful", "restful api"],
-      "description": "Architectural style for application programming interfaces.",
-      "related_skills": [
-        {"skill": "FastAPI", "transferability": 0.80}
-      ]
-    },
-    {
-      "canonical_name": "Git",
-      "category": "tool",
-      "aliases": ["git", "github", "gitlab"],
-      "description": "Distributed version control system.",
-      "related_skills": []
-    },
-    {
       "canonical_name": "Machine Learning",
       "category": "ai_ml",
       "aliases": ["machine learning", "ml", "statistical learning"],
-      "description": "Algorithms that improve automatically through experience and data.",
+      "description": "Algorithms that build mathematical models based on sample training data.",
       "related_skills": [
-        {"skill": "Deep Learning", "transferability": 0.80}
+        {"skill": "Deep Learning", "transferability": 0.80},
+        {"skill": "Scikit-Learn", "transferability": 0.90}
       ]
     },
     {
       "canonical_name": "Deep Learning",
       "category": "ai_ml",
-      "aliases": ["deep learning", "dl", "neural networks"],
-      "description": "Subset of machine learning based on artificial neural networks.",
+      "aliases": ["deep learning", "dl", "neural networks", "artificial neural networks"],
+      "description": "Subset of machine learning based on multi-layer artificial neural networks.",
       "related_skills": [
-        {"skill": "PyTorch", "transferability": 0.85}
+        {"skill": "PyTorch", "transferability": 0.85},
+        {"skill": "TensorFlow", "transferability": 0.85}
       ]
     },
     {
       "canonical_name": "Computer Vision",
       "category": "ai_ml",
-      "aliases": ["cv", "computer vision", "image processing", "object detection"],
-      "description": "Field of AI that trains computers to interpret visual data.",
+      "aliases": ["cv", "computer vision", "image processing", "object detection", "semantic segmentation"],
+      "description": "Field of AI that trains computers to interpret and understand the visual world.",
       "related_skills": [
         {"skill": "Deep Learning", "transferability": 0.85}
+      ]
+    },
+    {
+      "canonical_name": "NLP",
+      "category": "ai_ml",
+      "aliases": ["nlp", "natural language processing", "text processing", "text mining", "computational linguistics"],
+      "description": "Field of AI focused on the interaction between computers and human language.",
+      "related_skills": [
+        {"skill": "Transformers", "transferability": 0.85},
+        {"skill": "Large Language Models", "transferability": 0.90}
+      ]
+    },
+    {
+      "canonical_name": "Transformers",
+      "category": "ai_ml",
+      "aliases": ["transformers", "hugging face", "huggingface", "bert", "attention mechanisms"],
+      "description": "Deep learning architectures based on self-attention mechanisms for language and multimodal modeling.",
+      "related_skills": [
+        {"skill": "NLP", "transferability": 0.90},
+        {"skill": "PyTorch", "transferability": 0.80}
+      ]
+    },
+    {
+      "canonical_name": "Large Language Models",
+      "category": "ai_ml",
+      "aliases": ["llm", "llms", "large language models", "generative ai", "genai", "prompt engineering"],
+      "description": "Large-scale neural models trained on extensive text datasets for language generation and reasoning.",
+      "related_skills": [
+        {"skill": "NLP", "transferability": 0.85},
+        {"skill": "RAG", "transferability": 0.85}
+      ]
+    },
+    {
+      "canonical_name": "RAG",
+      "category": "ai_ml",
+      "aliases": ["rag", "retrieval-augmented generation", "retrieval augmented generation", "vector search"],
+      "description": "Technique for enhancing LLMs by retrieving relevant contextual evidence from external knowledge stores.",
+      "related_skills": [
+        {"skill": "Large Language Models", "transferability": 0.85}
       ]
     },
     {
       "canonical_name": "Scikit-Learn",
       "category": "library",
       "aliases": ["scikit-learn", "sklearn", "scikit learn"],
-      "description": "Machine learning library for Python.",
+      "description": "Machine learning library in Python featuring classification, regression, clustering, and preprocessing.",
       "related_skills": [
         {"skill": "Machine Learning", "transferability": 0.90}
       ]
@@ -204,24 +165,151 @@
       "related_skills": []
     },
     {
+      "canonical_name": "PostgreSQL",
+      "category": "database",
+      "aliases": ["postgresql", "postgres", "psql", "pgsql"],
+      "description": "Open source object-relational database management system with strong ACID compliance.",
+      "related_skills": [
+        {"skill": "MySQL", "transferability": 0.85},
+        {"skill": "SQL", "transferability": 0.95}
+      ]
+    },
+    {
+      "canonical_name": "MySQL",
+      "category": "database",
+      "aliases": ["mysql"],
+      "description": "Widely deployed open-source relational database management system.",
+      "related_skills": [
+        {"skill": "PostgreSQL", "transferability": 0.85},
+        {"skill": "SQL", "transferability": 0.95}
+      ]
+    },
+    {
+      "canonical_name": "Redis",
+      "category": "database",
+      "aliases": ["redis", "in-memory cache", "key-value store"],
+      "description": "In-memory data structure store used as a distributed cache and message broker.",
+      "related_skills": []
+    },
+    {
+      "canonical_name": "SQL",
+      "category": "programming_language",
+      "aliases": ["sql", "structured query language"],
+      "description": "Domain-specific language used for managing data held in relational database management systems.",
+      "related_skills": [
+        {"skill": "PostgreSQL", "transferability": 0.85}
+      ]
+    },
+    {
+      "canonical_name": "Docker",
+      "category": "cloud_devops",
+      "aliases": ["docker", "dockerfile", "docker-compose", "containerization", "containers"],
+      "description": "Platform for developing, shipping, and running applications in standardized containers.",
+      "related_skills": [
+        {"skill": "Kubernetes", "transferability": 0.75}
+      ]
+    },
+    {
+      "canonical_name": "Kubernetes",
+      "category": "cloud_devops",
+      "aliases": ["kubernetes", "k8s"],
+      "description": "Open-source system for automating deployment, scaling, and management of containerized applications.",
+      "related_skills": [
+        {"skill": "Docker", "transferability": 0.80}
+      ]
+    },
+    {
+      "canonical_name": "AWS",
+      "category": "cloud_devops",
+      "aliases": ["aws", "amazon web services", "ec2", "s3", "lambda"],
+      "description": "Comprehensive cloud computing platform provided by Amazon.",
+      "related_skills": [
+        {"skill": "Google Cloud Platform", "transferability": 0.80}
+      ]
+    },
+    {
+      "canonical_name": "Google Cloud Platform",
+      "category": "cloud_devops",
+      "aliases": ["gcp", "google cloud", "google cloud platform"],
+      "description": "Suite of cloud computing services by Google running on the same infrastructure as Google Search.",
+      "related_skills": [
+        {"skill": "AWS", "transferability": 0.80}
+      ]
+    },
+    {
+      "canonical_name": "CI/CD",
+      "category": "cloud_devops",
+      "aliases": ["ci/cd", "ci cd", "continuous integration", "github actions", "gitlab ci"],
+      "description": "Continuous Integration and Continuous Deployment pipeline automation.",
+      "related_skills": []
+    },
+    {
+      "canonical_name": "Terraform",
+      "category": "cloud_devops",
+      "aliases": ["terraform", "iac", "infrastructure as code"],
+      "description": "Infrastructure as code software tool providing a consistent CLI workflow to manage cloud services.",
+      "related_skills": []
+    },
+    {
+      "canonical_name": "Bash",
+      "category": "tool",
+      "aliases": ["bash", "shell", "shell scripting", "linux", "unix"],
+      "description": "Unix shell and command language for system administration and process automation.",
+      "related_skills": []
+    },
+    {
+      "canonical_name": "React",
+      "category": "framework",
+      "aliases": ["react", "react.js", "reactjs"],
+      "description": "Component-based front-end JavaScript library for building interactive user interfaces.",
+      "related_skills": [
+        {"skill": "Next.js", "transferability": 0.90}
+      ]
+    },
+    {
+      "canonical_name": "Next.js",
+      "category": "framework",
+      "aliases": ["next.js", "nextjs", "next"],
+      "description": "React framework enabling server-side rendering and static web application generation.",
+      "related_skills": [
+        {"skill": "React", "transferability": 0.95}
+      ]
+    },
+    {
+      "canonical_name": "REST APIs",
+      "category": "tool",
+      "aliases": ["rest", "rest api", "rest apis", "restful", "restful api", "api development"],
+      "description": "Architectural style for distributed hypermedia systems and web services.",
+      "related_skills": [
+        {"skill": "FastAPI", "transferability": 0.80}
+      ]
+    },
+    {
+      "canonical_name": "Git",
+      "category": "tool",
+      "aliases": ["git", "github", "gitlab", "version control"],
+      "description": "Distributed version control system for tracking changes in source code during development.",
+      "related_skills": []
+    },
+    {
       "canonical_name": "Apache Spark",
       "category": "data_engineering",
       "aliases": ["spark", "apache spark", "pyspark"],
-      "description": "Engine for large-scale data processing.",
+      "description": "Unified analytics engine for large-scale data processing and streaming.",
       "related_skills": []
     },
     {
       "canonical_name": "Apache Kafka",
       "category": "data_engineering",
       "aliases": ["kafka", "apache kafka"],
-      "description": "Distributed event streaming platform.",
+      "description": "Distributed event streaming platform capable of handling trillions of events a day.",
       "related_skills": []
     },
     {
       "canonical_name": "TypeScript",
       "category": "programming_language",
       "aliases": ["typescript", "ts"],
-      "description": "Typed superset of JavaScript.",
+      "description": "Strict syntactical superset of JavaScript adding optional static type definitions.",
       "related_skills": [
         {"skill": "JavaScript", "transferability": 0.95}
       ]
@@ -230,7 +318,7 @@
       "canonical_name": "JavaScript",
       "category": "programming_language",
       "aliases": ["javascript", "js", "ecmascript"],
-      "description": "High-level scripting language for the web.",
+      "description": "High-level interpreted scripting language for client-side and server-side web execution.",
       "related_skills": [
         {"skill": "TypeScript", "transferability": 0.85}
       ]
