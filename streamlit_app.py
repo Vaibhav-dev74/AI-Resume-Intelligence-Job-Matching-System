@@ -5,7 +5,6 @@ import time
 import hashlib
 from pathlib import Path
 import streamlit as st
-import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -29,108 +28,6 @@ st.set_page_config(
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
-)
-
-# ==============================================================================
-# HIDE STREAMLIT CLOUD TOOLBAR, GITHUB / PENCIL ICONS, AND MANAGE APP BUTTON
-# ==============================================================================
-components.html(
-    """
-    <script>
-    function removeCloudChrome() {
-        const docTargets = [document];
-        try {
-            if (window.parent && window.parent.document) {
-                docTargets.push(window.parent.document);
-            }
-            if (window.top && window.top.document && window.top !== window.parent) {
-                docTargets.push(window.top.document);
-            }
-        } catch (e) {}
-
-        docTargets.forEach(doc => {
-            if (!doc) return;
-
-            // 1. Hide Header & Toolbar (GitHub icon, pencil icon, star, share, deploy)
-            const headers = doc.querySelectorAll('header[data-testid="stHeader"], .stAppHeader');
-            headers.forEach(h => {
-                h.style.visibility = 'hidden';
-                h.style.height = '0px';
-                h.style.minHeight = '0px';
-            });
-
-            const toolbars = doc.querySelectorAll('[data-testid="stToolbar"], [data-testid="stToolbarActions"], #MainMenu, [data-testid="stDecoration"]');
-            toolbars.forEach(t => {
-                t.style.display = 'none';
-                t.style.visibility = 'hidden';
-            });
-
-            // 2. Hide "Manage app" floating badge / button
-            const manageBadges = doc.querySelectorAll('[data-testid="manage-app-button"], [class*="viewerBadge"], [class*="manage-app"], [class*="ManageApp"]');
-            manageBadges.forEach(b => {
-                b.style.display = 'none';
-                b.style.visibility = 'hidden';
-                if (b.parentElement && (b.parentElement.tagName === 'DIV' || b.parentElement.tagName === 'FOOTER')) {
-                    b.parentElement.style.display = 'none';
-                }
-            });
-
-            // 3. Scan for any button or link containing GitHub, Edit/Pencil, or Manage App
-            const buttonsAndLinks = doc.querySelectorAll('button, a, div[role="button"]');
-            buttonsAndLinks.forEach(el => {
-                const text = (el.innerText || '').toLowerCase().trim();
-                const title = (el.getAttribute('title') || '').toLowerCase();
-                const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-                const href = (el.getAttribute('href') || '').toLowerCase();
-
-                if (
-                    text.includes('manage app') || 
-                    title.includes('manage app') || 
-                    aria.includes('manage app')
-                ) {
-                    el.style.display = 'none';
-                    el.style.visibility = 'hidden';
-                    let parent = el.parentElement;
-                    while (parent && parent !== doc.body) {
-                        if (parent.className && typeof parent.className === 'string' && parent.className.includes('viewerBadge')) {
-                            parent.style.display = 'none';
-                            break;
-                        }
-                        parent = parent.parentElement;
-                    }
-                }
-
-                if (
-                    title.includes('github') || 
-                    aria.includes('github') || 
-                    href.includes('github.com') ||
-                    title.includes('edit') || 
-                    aria.includes('edit') || 
-                    title.includes('view source')
-                ) {
-                    el.style.display = 'none';
-                    el.style.visibility = 'hidden';
-                }
-            });
-        });
-    }
-
-    removeCloudChrome();
-    try {
-        if (window.MutationObserver) {
-            const obs = new MutationObserver(() => removeCloudChrome());
-            obs.observe(document.body, { childList: true, subtree: true });
-            if (window.parent && window.parent.document && window.parent.document.body) {
-                const parentObs = new MutationObserver(() => removeCloudChrome());
-                parentObs.observe(window.parent.document.body, { childList: true, subtree: true });
-            }
-        }
-    } catch (e) {}
-    setInterval(removeCloudChrome, 1200);
-    </script>
-    """,
-    height=0,
-    width=0
 )
 
 # Pre-warm embedding model with fallback
@@ -178,25 +75,30 @@ st.markdown("""
         pointer-events: none !important;
     }
 
-    /* Hide Streamlit Community Cloud Manage App floating badge & footer */
+    /* Hide Streamlit Community Cloud Manage App floating badge & footer safely without affecting root containers */
     footer,
     [data-testid="stFooter"],
     [data-testid="manage-app-button"],
+    button[data-testid="manage-app-button"],
+    a[data-testid="manage-app-button"],
+    div[data-testid="manage-app-button"],
     [class*="viewerBadge_container"],
     [class*="viewerBadge"],
+    .viewerBadge_container,
     [class*="ManageApp"],
     [class*="manage-app"],
     [class*="StatusWidget"],
     #manage-app-button,
-    .manage-app-button,
-    div:has(> [data-testid="manage-app-button"]),
-    div:has(> button[data-testid="manage-app-button"]) {
+    .manage-app-button {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
         width: 0px !important;
         height: 0px !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
     }
 
     html, body, [class*="css"] {
