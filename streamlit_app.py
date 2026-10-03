@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import time
+import hashlib
 from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
@@ -18,6 +20,9 @@ from app.ai.recommendations.resume_improver import resume_improver
 from app.ai.recommendations.job_recommender import job_recommender
 from app.services.evaluation_service import evaluation_service
 from app.ai.embeddings.embedding_engine import embedding_engine
+from app.core.security import validate_file_safety
+from app.core.logging import logger
+from app.core.config import settings
 
 st.set_page_config(
     page_title="IntelliResume AI — AI Resume Intelligence & Job Matching",
@@ -111,20 +116,30 @@ components.html(
     }
 
     removeCloudChrome();
-    setInterval(removeCloudChrome, 300);
+    try {
+        if (window.MutationObserver) {
+            const obs = new MutationObserver(() => removeCloudChrome());
+            obs.observe(document.body, { childList: true, subtree: true });
+            if (window.parent && window.parent.document && window.parent.document.body) {
+                const parentObs = new MutationObserver(() => removeCloudChrome());
+                parentObs.observe(window.parent.document.body, { childList: true, subtree: true });
+            }
+        }
+    } catch (e) {}
+    setInterval(removeCloudChrome, 1200);
     </script>
     """,
     height=0,
     width=0
 )
 
-# Pre-warm embedding model to eliminate cold-start inference lag
+# Pre-warm embedding model with fallback
 @st.cache_resource(show_spinner=False)
 def warm_embedding_engine():
     try:
         embedding_engine._get_model()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Embedding engine pre-warming deferred: {e}")
     return True
 
 _ = warm_embedding_engine()
@@ -391,6 +406,10 @@ if "jobs" not in st.session_state:
     st.session_state.jobs = {}
 if "current_match" not in st.session_state:
     st.session_state.current_match = None
+if "current_match_pair" not in st.session_state:
+    st.session_state.current_match_pair = None
+if "last_uploaded_file_hash" not in st.session_state:
+    st.session_state.last_uploaded_file_hash = None
 
 PRESET_RESUMES = {
     "Alice Chen (Senior ML Engineer)": """Alice Chen
@@ -774,6 +793,8 @@ elif selected_page == "Resume Parser & Extractor":
         if clear_cache:
             st.session_state.resumes = {}
             st.session_state.current_match = None
+            st.session_state.current_match_pair = None
+            st.session_state.last_uploaded_file_hash = None
             st.rerun()
 
         file_bytes = None
@@ -783,18 +804,31 @@ elif selected_page == "Resume Parser & Extractor":
             file_bytes = PRESET_RESUMES["Alice Chen (Senior ML Engineer)"].encode("utf-8")
             filename = "Alice_Chen_Resume.txt"
         elif uploaded_file is not None:
-            file_bytes = uploaded_file.read()
+            file_bytes = uploaded_file.getvalue()
             filename = uploaded_file.name
 
         if file_bytes:
-            with st.spinner("Extracting entities, cleaning ligatures, and segmenting sections..."):
-                try:
-                    cleaned_text, sections, pages = document_parser_factory.parse_document(file_bytes, filename)
-                    profile = resume_extractor.extract_profile(cleaned_text, sections)
-                    st.session_state.resumes[profile["full_name"]] = profile
-                    st.success(f"Successfully extracted: **{profile['full_name']}** ({pages} page(s) analyzed)")
-                except Exception as e:
-                    st.error(f"Unable to extract text from this document: {e}")
+            file_hash = hashlib.sha256(file_bytes).hexdigest()
+            if st.session_state.get("last_uploaded_file_hash") != file_hash:
+                is_safe, msg = validate_file_safety(file_bytes, filename)
+                if not is_safe:
+                    st.error(f"⚠️ {msg}")
+                else:
+                    with st.spinner("Extracting entities, cleaning ligatures, and segmenting sections..."):
+                        try:
+                            t0 = time.perf_counter()
+                            logger.info(f"Parsing uploaded resume '{filename}' ({len(file_bytes)} bytes)...")
+                            cleaned_text, sections, pages = document_parser_factory.parse_document(file_bytes, filename)
+                            profile = resume_extractor.extract_profile(cleaned_text, sections)
+                            st.session_state.resumes[profile["full_name"]] = profile
+                            st.session_state.last_uploaded_file_hash = file_hash
+                            logger.info(f"Parsed resume successfully in {time.perf_counter() - t0:.2f}s ({pages} pages, {len(profile.get('skills', []))} skills).")
+                            st.success(f"Successfully extracted: **{profile['full_name']}** ({pages} page(s) analyzed)")
+                        except ValueError as ve:
+                            st.error(f"Unable to process this resume: {ve}")
+                        except Exception as e:
+                            logger.error(f"Unexpected parsing error for {filename}: {e}")
+                            st.error(f"Unable to extract text from this document. If this is an image-only or scanned PDF, please ensure it has readable text or try another file.")
 
     with col_preview:
         if st.session_state.resumes:
@@ -892,25 +926,27 @@ elif selected_page == "Job Description Analyzer":
                     st.error(f"Analysis error: {e}")
 
     with col_meta:
+        active_job = None
         if st.session_state.jobs:
             sel_job_name = st.selectbox("Active Job Specification", list(st.session_state.jobs.keys()))
-            active_job = st.session_state.jobs[sel_job_name]
+            active_job = st.session_state.jobs.get(sel_job_name)
 
-            st.markdown(f"""
-                <div class="saas-card">
-                    <div style="font-size: 1.3rem; font-weight: 800;">{active_job['title']}</div>
-                    <div style="color: #818CF8; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.8rem;">{active_job['company']} | {active_job.get('location', 'Remote/Hybrid')}</div>
-                    <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-                        <span class="badge-direct">Min Exp: {active_job['min_years_experience']} Years</span>
-                        <span class="badge-trans">Domain: {active_job['domain']}</span>
-                        <span class="badge-inferred">Education: Level {active_job['min_education_level']}+</span>
+            if active_job:
+                st.markdown(f"""
+                    <div class="saas-card">
+                        <div style="font-size: 1.3rem; font-weight: 800;">{active_job['title']}</div>
+                        <div style="color: #818CF8; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.8rem;">{active_job['company']} | {active_job.get('location', 'Remote/Hybrid')}</div>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                            <span class="badge-direct">Min Exp: {active_job['min_years_experience']} Years</span>
+                            <span class="badge-trans">Domain: {active_job['domain']}</span>
+                            <span class="badge-inferred">Education: Level {active_job['min_education_level']}+</span>
+                        </div>
                     </div>
-                </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
         else:
             st.info("👈 Paste a job description or click 'Load Sample AI Requisition' to inspect requirements.")
 
-    if st.session_state.jobs:
+    if st.session_state.jobs and active_job:
         st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
         col_req, col_pref = st.columns(2)
         with col_req:
@@ -1438,95 +1474,98 @@ elif selected_page == "AI Evaluation & Benchmarks":
 
         eval_data = st.session_state.get("eval_metrics")
         if eval_data:
-            m = eval_data["metrics"]
-            d_info = eval_data.get("dataset_info", {})
+            if "error" in eval_data:
+                st.error(f"⚠️ {eval_data['error']}")
+            elif "metrics" in eval_data:
+                m = eval_data["metrics"]
+                d_info = eval_data.get("dataset_info", {})
 
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-val" style="color: #10B981;">{m['skill_extraction_precision']*100:.1f}%</div>
-                        <div class="metric-lbl">Extraction Precision</div>
-                        <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col2:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-val" style="color: #818CF8;">{m['skill_extraction_recall']*100:.1f}%</div>
-                        <div class="metric-lbl">Extraction Recall</div>
-                        <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col3:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-val" style="color: #38BDF8;">{m['skill_extraction_f1']:.3f}</div>
-                        <div class="metric-lbl">F1 Quality Score</div>
-                        <div class="metric-ctx">Harmonic mean of precision & recall</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col4:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-val" style="color: #10B981;">{m['job_requirement_accuracy']*100:.1f}%</div>
-                        <div class="metric-lbl">Requirement Accuracy</div>
-                        <div class="metric-ctx">Across {d_info.get('num_evaluated_requirements', 9)} requirement checks</div>
-                    </div>
-                """, unsafe_allow_html=True)
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <div class="metric-val" style="color: #10B981;">{m['skill_extraction_precision']*100:.1f}%</div>
+                            <div class="metric-lbl">Extraction Precision</div>
+                            <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col2:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <div class="metric-val" style="color: #818CF8;">{m['skill_extraction_recall']*100:.1f}%</div>
+                            <div class="metric-lbl">Extraction Recall</div>
+                            <div class="metric-ctx">Tested on {d_info.get('num_annotated_skills', 24)} ground-truth skills</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <div class="metric-val" style="color: #38BDF8;">{m['skill_extraction_f1']:.3f}</div>
+                            <div class="metric-lbl">F1 Quality Score</div>
+                            <div class="metric-ctx">Harmonic mean of precision & recall</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col4:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <div class="metric-val" style="color: #10B981;">{m['job_requirement_accuracy']*100:.1f}%</div>
+                            <div class="metric-lbl">Requirement Accuracy</div>
+                            <div class="metric-ctx">Across {d_info.get('num_evaluated_requirements', 9)} requirement checks</div>
+                        </div>
+                    """, unsafe_allow_html=True)
 
-            st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
+                st.markdown("<hr class='styled-divider'>", unsafe_allow_html=True)
 
-            bar_fig = go.Figure(data=[
-                go.Bar(
-                    x=['Precision', 'Recall', 'F1 Score', 'Requirement Accuracy', 'MRR Semantic'],
-                    y=[
-                        m['skill_extraction_precision'] * 100,
-                        m['skill_extraction_recall'] * 100,
-                        m['skill_extraction_f1'] * 100,
-                        m['job_requirement_accuracy'] * 100,
-                        m['semantic_similarity_mrr'] * 100
-                    ],
-                    marker_color=['#10B981', '#6366F1', '#38BDF8', '#10B981', '#A855F7'],
-                    text=[
-                        f"{m['skill_extraction_precision']*100:.1f}%",
-                        f"{m['skill_extraction_recall']*100:.1f}%",
-                        f"{m['skill_extraction_f1']*100:.1f}%",
-                        f"{m['job_requirement_accuracy']*100:.1f}%",
-                        f"{m['semantic_similarity_mrr']*100:.1f}%"
-                    ],
-                    textposition='outside'
+                bar_fig = go.Figure(data=[
+                    go.Bar(
+                        x=['Precision', 'Recall', 'F1 Score', 'Requirement Accuracy', 'MRR Semantic'],
+                        y=[
+                            m['skill_extraction_precision'] * 100,
+                            m['skill_extraction_recall'] * 100,
+                            m['skill_extraction_f1'] * 100,
+                            m['job_requirement_accuracy'] * 100,
+                            m['semantic_similarity_mrr'] * 100
+                        ],
+                        marker_color=['#10B981', '#6366F1', '#38BDF8', '#10B981', '#A855F7'],
+                        text=[
+                            f"{m['skill_extraction_precision']*100:.1f}%",
+                            f"{m['skill_extraction_recall']*100:.1f}%",
+                            f"{m['skill_extraction_f1']*100:.1f}%",
+                            f"{m['job_requirement_accuracy']*100:.1f}%",
+                            f"{m['semantic_similarity_mrr']*100:.1f}%"
+                        ],
+                        textposition='outside'
+                    )
+                ])
+                bar_fig.update_layout(
+                    title="Benchmark Metric Performance vs Ground Truth",
+                    yaxis=dict(range=[0, 115], title="Score (%)"),
+                    xaxis=dict(title="Evaluation Metric"),
+                    height=320,
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font={'color': '#94A3B8'}
                 )
-            ])
-            bar_fig.update_layout(
-                title="Benchmark Metric Performance vs Ground Truth",
-                yaxis=dict(range=[0, 115], title="Score (%)"),
-                xaxis=dict(title="Evaluation Metric"),
-                height=320,
-                margin=dict(l=20, r=20, t=40, b=20),
-                paper_bgcolor='rgba(0,0,0,0)',
-                font={'color': '#94A3B8'}
-            )
-            st.plotly_chart(bar_fig, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(bar_fig, use_container_width=True, config={'displayModeBar': False})
 
-            c_met, c_lim = st.columns(2)
-            with c_met:
-                st.markdown(f"""
-                    <div class="saas-card" style="border-left: 4px solid #10B981;">
-                        <div style="font-weight: 700; margin-bottom: 0.2rem;">Evaluation Methodology</div>
-                        <div style="color: #94A3B8; font-size: 0.9rem; line-height: 1.5;">{eval_data.get('methodology', '')}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with c_lim:
-                lim_html = "".join([f"<li>{l}</li>" for l in eval_data.get('limitations', [])])
-                st.markdown(f"""
-                    <div class="saas-card" style="border-left: 4px solid #F59E0B;">
-                        <div style="font-weight: 700; margin-bottom: 0.2rem;">Known Limitations</div>
-                        <ul style="color: #94A3B8; font-size: 0.88rem; line-height: 1.5; margin: 0.3rem 0; padding-left: 1.2rem;">
-                            {lim_html}
-                        </ul>
-                    </div>
-                """, unsafe_allow_html=True)
+                c_met, c_lim = st.columns(2)
+                with c_met:
+                    st.markdown(f"""
+                        <div class="saas-card" style="border-left: 4px solid #10B981;">
+                            <div style="font-weight: 700; margin-bottom: 0.2rem;">Evaluation Methodology</div>
+                            <div style="color: #94A3B8; font-size: 0.9rem; line-height: 1.5;">{eval_data.get('methodology', '')}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with c_lim:
+                    lim_html = "".join([f"<li>{l}</li>" for l in eval_data.get('limitations', [])])
+                    st.markdown(f"""
+                        <div class="saas-card" style="border-left: 4px solid #F59E0B;">
+                            <div style="font-weight: 700; margin-bottom: 0.2rem;">Known Limitations</div>
+                            <ul style="color: #94A3B8; font-size: 0.88rem; line-height: 1.5; margin: 0.3rem 0; padding-left: 1.2rem;">
+                                {lim_html}
+                            </ul>
+                        </div>
+                    """, unsafe_allow_html=True)
 
 
 # ==============================================================================

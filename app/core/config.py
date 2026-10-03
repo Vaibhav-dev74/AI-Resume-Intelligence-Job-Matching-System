@@ -7,6 +7,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
+# Synchronize Streamlit Cloud secrets into os.environ if running inside Streamlit
+try:
+    import streamlit as st
+    if hasattr(st, "secrets"):
+        for k, v in st.secrets.items():
+            if isinstance(v, (str, int, float, bool)) and k not in os.environ:
+                os.environ[k] = str(v)
+except Exception:
+    pass
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",

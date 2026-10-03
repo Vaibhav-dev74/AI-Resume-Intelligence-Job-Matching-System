@@ -7,6 +7,7 @@ from typing import Any
 class PIIMaskingFilter(logging.Filter):
     EMAIL_REGEX = re.compile(r"([a-zA-Z0-9_.+-]+)@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)")
     PHONE_REGEX = re.compile(r"(\+?[0-9]{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)(\d{3}[-.\s]?\d{4})")
+    API_KEY_REGEX = re.compile(r"(?:sk-[a-zA-Z0-9]{20,}|AIza[0-9A-Za-z-_]{35}|Bearer\s+[a-zA-Z0-9_\-\.]{20,})")
 
     def filter(self, record: logging.LogRecord) -> bool:
         if isinstance(record.msg, str):
@@ -23,6 +24,7 @@ class PIIMaskingFilter(logging.Filter):
                 masked_name = name[0] + "***" + name[-1]
             return f"{masked_name}@{domain}"
 
+        text = cls.API_KEY_REGEX.sub("[REDACTED_API_KEY]", text)
         text = cls.EMAIL_REGEX.sub(email_repl, text)
         text = cls.PHONE_REGEX.sub(r"***-***-\3", text)
         return text

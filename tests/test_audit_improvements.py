@@ -125,3 +125,55 @@ def test_blind_screening_pii_anonymization():
     assert "[REDACTED URL]" in anonymized
     assert "[REDACTED CANDIDATE NAME]" in anonymized or "[REDACTED NAME]" in anonymized
     assert "janedoe" not in anonymized.lower()
+
+
+def test_file_safety_validation():
+    """Verify file upload security constraints (empty, oversize, invalid extension)."""
+    from app.core.security import validate_file_safety
+
+    # Empty file
+    is_safe, msg = validate_file_safety(b"", "empty.pdf")
+    assert is_safe is False
+    assert "empty" in msg.lower()
+
+    # Oversize file (>10MB)
+    huge_bytes = b"0" * (11 * 1024 * 1024)
+    is_safe, msg = validate_file_safety(huge_bytes, "huge.pdf")
+    assert is_safe is False
+    assert "maximum allowed size" in msg.lower()
+
+    # Unsupported extension
+    is_safe, msg = validate_file_safety(b"malicious executable", "malware.exe")
+    assert is_safe is False
+    assert "not supported" in msg.lower()
+
+    # Valid text
+    is_safe, msg = validate_file_safety(b"Senior AI Engineer Resume text", "resume.txt")
+    assert is_safe is True
+
+
+def test_pii_logging_filter_api_key_redaction():
+    """Verify logging filter strips API keys and secrets from output."""
+    from app.core.logging import PIIMaskingFilter
+
+    raw_log = "Error connecting to service with token sk-1234567890abcdef12345678 and key AIzaSyA1234567890abcdefghijklmnopqrstuv"
+    masked = PIIMaskingFilter.mask_text(raw_log)
+    assert "sk-1234567890abcdef12345678" not in masked
+    assert "AIzaSyA1234567890abcdefghijklmnopqrstuv" not in masked
+    assert "[REDACTED_API_KEY]" in masked
+
+
+def test_deterministic_fallback_vector():
+    """Verify deterministic fallback embedding produces unit vectors with matching dimension."""
+    engine = EmbeddingEngine()
+    vec1 = engine._deterministic_fallback_vector("Distributed Python Machine Learning Engineer")
+    vec2 = engine._deterministic_fallback_vector("Distributed Python Machine Learning Engineer")
+    vec3 = engine._deterministic_fallback_vector("Completely different topic about cooking")
+
+    assert vec1.shape == (384,)
+    assert pytest.approx(float(np.linalg.norm(vec1)), 0.001) == 1.0
+    # Determinism
+    assert np.allclose(vec1, vec2)
+    # Cosine similarity between different vectors is valid
+    sim = engine.cosine_similarity(vec1, vec3)
+    assert 0.0 <= sim <= 1.0

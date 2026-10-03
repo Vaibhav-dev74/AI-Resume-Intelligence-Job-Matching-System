@@ -18,10 +18,21 @@ class EmbeddingEngine:
     def _get_model(self):
         if self._model is None:
             try:
+                import os
+                import torch
+                # Restrict OpenMP/PyTorch thread allocation on shared container vCPUs
+                torch.set_num_threads(min(2, max(1, os.cpu_count() or 1)))
+            except Exception:
+                pass
+
+            try:
+                import time
                 from sentence_transformers import SentenceTransformer
-                logger.info(f"Loading SentenceTransformer model: {self.model_name}...")
+                t0 = time.perf_counter()
+                logger.info(f"Initializing SentenceTransformer model: {self.model_name}...")
                 self._model = SentenceTransformer(self.model_name)
-                logger.info("SentenceTransformer model loaded successfully.")
+                load_time = time.perf_counter() - t0
+                logger.info(f"SentenceTransformer model loaded successfully in {load_time:.2f}s.")
             except Exception as e:
                 logger.warning(f"Could not load SentenceTransformer ({e}). Using deterministic fallback embedding.")
                 self._model = "FALLBACK"
