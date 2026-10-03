@@ -17,6 +17,7 @@ from app.ai.matching.gap_analyzer import gap_analyzer
 from app.ai.recommendations.resume_improver import resume_improver
 from app.ai.recommendations.job_recommender import job_recommender
 from app.services.evaluation_service import evaluation_service
+from app.ai.embeddings.embedding_engine import embedding_engine
 
 st.set_page_config(
     page_title="IntelliResume AI — AI Resume Intelligence & Job Matching",
@@ -116,6 +117,17 @@ components.html(
     height=0,
     width=0
 )
+
+# Pre-warm embedding model to eliminate cold-start inference lag
+@st.cache_resource(show_spinner=False)
+def warm_embedding_engine():
+    try:
+        embedding_engine._get_model()
+    except Exception:
+        pass
+    return True
+
+_ = warm_embedding_engine()
 
 # ==============================================================================
 # MODERN SAAS DESIGN SYSTEM
@@ -509,18 +521,27 @@ PREFERRED QUALIFICATIONS:
 """
 }
 
+@st.cache_data(show_spinner=False)
+def parse_preset_resume(resume_name: str, r_text: str):
+    c_text, sections, _ = document_parser_factory.parse_document(r_text.encode("utf-8"), f"{resume_name}.txt")
+    return resume_extractor.extract_profile(c_text, sections)
+
+@st.cache_data(show_spinner=False)
+def parse_preset_job(job_name: str, j_text: str):
+    return job_analyzer.analyze(j_text)
+
 def load_preset_pair(resume_name: str, job_name: str) -> bool:
     try:
         r_text = PRESET_RESUMES[resume_name]
-        c_text, sections, _ = document_parser_factory.parse_document(r_text.encode("utf-8"), f"{resume_name}.txt")
-        cand_profile = resume_extractor.extract_profile(c_text, sections)
+        cand_profile = parse_preset_resume(resume_name, r_text)
         st.session_state.resumes[cand_profile["full_name"]] = cand_profile
 
         j_text = PRESET_JOBS[job_name]
-        parsed_job = job_analyzer.analyze(j_text)
+        parsed_job = parse_preset_job(job_name, j_text)
         st.session_state.jobs[parsed_job["title"]] = parsed_job
 
         st.session_state.current_match = matching_engine.match(cand_profile, parsed_job)
+        st.session_state.current_match_pair = (cand_profile["full_name"], parsed_job["title"])
         return True
     except Exception as e:
         st.error(f"Error loading demo: {e}")
@@ -818,7 +839,7 @@ elif selected_page == "Resume Parser & Extractor":
                 )
                 fig.update_traces(textposition='inside', textinfo='percent+label')
                 fig.update_layout(showlegend=False, margin=dict(t=30, b=10, l=10, r=10), height=280, paper_bgcolor='rgba(0,0,0,0)', font={'color': '#94A3B8'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
             with col_skills:
                 for cat, sk_list in skills_by_cat.items():
@@ -935,11 +956,13 @@ elif selected_page == "Semantic Match & Evidence":
 
         cand = st.session_state.resumes[sel_res_name]
         job = st.session_state.jobs[sel_job_name]
+        pair_key = (sel_res_name, sel_job_name)
 
-        if recalc or st.session_state.current_match is None:
+        if recalc or st.session_state.current_match is None or st.session_state.get("current_match_pair") != pair_key:
             with st.spinner("Executing semantic embedding matching and evidence verification..."):
                 try:
                     st.session_state.current_match = matching_engine.match(cand, job)
+                    st.session_state.current_match_pair = pair_key
                 except Exception as e:
                     st.error(f"Matching Error: {e}")
 
@@ -966,7 +989,7 @@ elif selected_page == "Semantic Match & Evidence":
                     }
                 ))
                 gauge_fig.update_layout(height=260, margin=dict(l=20, r=20, t=50, b=20), paper_bgcolor='rgba(0,0,0,0)', font={'color': '#94A3B8'})
-                st.plotly_chart(gauge_fig, use_container_width=True)
+                st.plotly_chart(gauge_fig, use_container_width=True, config={'displayModeBar': False})
 
             with col_radar:
                 radar_categories = ['Required Skills', 'Semantic Fit', 'Experience', 'Preferred Skills', 'Project Fit', 'Education']
@@ -997,7 +1020,7 @@ elif selected_page == "Semantic Match & Evidence":
                     paper_bgcolor='rgba(0,0,0,0)',
                     font={'color': '#94A3B8'}
                 )
-                st.plotly_chart(radar_fig, use_container_width=True)
+                st.plotly_chart(radar_fig, use_container_width=True, config={'displayModeBar': False})
 
             # Rationale Box
             st.markdown(f"""
@@ -1120,7 +1143,13 @@ elif selected_page == "Skill Gap & Learning Roadmap":
         cand = st.session_state.resumes[sel_res]
         job = st.session_state.jobs[sel_j]
 
-        match_res = matching_engine.match(cand, job)
+        if st.session_state.get("current_match_pair") == (sel_res, sel_j) and st.session_state.current_match is not None:
+            match_res = st.session_state.current_match
+        else:
+            match_res = matching_engine.match(cand, job)
+            st.session_state.current_match = match_res
+            st.session_state.current_match_pair = (sel_res, sel_j)
+
         gaps = gap_analyzer.analyze_gaps(cand["skills"], match_res["evidences"])
 
         cov = gaps['coverage_ratio']
@@ -1267,14 +1296,19 @@ elif selected_page == "AI Job Recommendations":
 
         sample_jobs_pool = list(st.session_state.jobs.values())
         if len(sample_jobs_pool) < 2:
-            extra_jobs = [
-                job_analyzer.analyze(PRESET_JOBS["Apex Robotics (Senior AI/CV Engineer)"]),
-                job_analyzer.analyze(PRESET_JOBS["Stripe (Senior Backend Platform Engineer)"]),
-                job_analyzer.analyze(PRESET_JOBS["DeepMind (Research Systems Engineer - NLP)"])
+            sample_jobs_pool = [
+                parse_preset_job("Apex Robotics (Senior AI/CV Engineer)", PRESET_JOBS["Apex Robotics (Senior AI/CV Engineer)"]),
+                parse_preset_job("Stripe (Senior Backend Platform Engineer)", PRESET_JOBS["Stripe (Senior Backend Platform Engineer)"]),
+                parse_preset_job("DeepMind (Research Systems Engineer - NLP)", PRESET_JOBS["DeepMind (Research Systems Engineer - NLP)"])
             ]
-            sample_jobs_pool = extra_jobs
 
-        recommendations = job_recommender.recommend_jobs(cand, sample_jobs_pool, top_k=5)
+        rec_cache_key = f"rec_{sel_res}_{len(sample_jobs_pool)}"
+        if rec_cache_key in st.session_state:
+            recommendations = st.session_state[rec_cache_key]
+        else:
+            with st.spinner("Analyzing profile compatibility against job requisitions..."):
+                recommendations = job_recommender.recommend_jobs(cand, sample_jobs_pool, top_k=5)
+                st.session_state[rec_cache_key] = recommendations
 
         for rec in recommendations:
             fit = rec['overall_fit_score']
@@ -1473,7 +1507,7 @@ elif selected_page == "AI Evaluation & Benchmarks":
                 paper_bgcolor='rgba(0,0,0,0)',
                 font={'color': '#94A3B8'}
             )
-            st.plotly_chart(bar_fig, use_container_width=True)
+            st.plotly_chart(bar_fig, use_container_width=True, config={'displayModeBar': False})
 
             c_met, c_lim = st.columns(2)
             with c_met:
