@@ -43,11 +43,27 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "production-ready-secure-key-32-chars-min-xyz123"
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
+        "http://localhost:5173",
         "http://localhost:8501",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
         "http://127.0.0.1:8501",
         "http://127.0.0.1:8000"
     ]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            if v.strip().startswith("[") and v.strip().endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".docx", ".txt"]
 

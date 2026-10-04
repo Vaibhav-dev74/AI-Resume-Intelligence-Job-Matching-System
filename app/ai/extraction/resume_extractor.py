@@ -20,7 +20,7 @@ class ResumeExtractor:
         experiences, total_years = experience_extractor.extract(exp_text, raw_text)
         educations = education_extractor.extract(edu_text, raw_text)
 
-        skills_combined_text = f"{skills_text}\n{exp_text}\n{proj_text}"
+        skills_combined_text = f"{skills_text}\n{exp_text}\n{proj_text}".strip()
         skills = skill_extractor.extract_skills(skills_combined_text or raw_text)
         categorized_skills = skill_extractor.categorize_skills(skills)
 

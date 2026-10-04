@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.core.logging import logger
 from app.models.database import init_db
 from app.api.v1.router import api_v1_router
+from app.api.rest_api import router as rest_api_router
 
 
 @asynccontextmanager
@@ -65,3 +66,4 @@ async def root():
 
 
 app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
+app.include_router(rest_api_router, prefix="/api")
