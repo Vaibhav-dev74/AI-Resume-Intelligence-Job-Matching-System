@@ -17,3 +17,4 @@ services:
         value: sentence-transformers/all-MiniLM-L6-v2
       - key: ALLOWED_ORIGINS
         value: "http://localhost:5173,https://*.vercel.app"
+
