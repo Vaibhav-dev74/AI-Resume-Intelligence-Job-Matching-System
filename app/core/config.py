@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    SECRET_KEY: str = "production-ready-secure-key-32-chars-min-xyz123"
+    SECRET_KEY: str = "dev-insecure-secret-key-change-in-env-production"
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
