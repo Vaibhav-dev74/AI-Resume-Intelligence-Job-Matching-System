@@ -130,25 +130,6 @@ IntelliResume is rigorously benchmarked offline against a gold-standard dataset 
 
 ---
 
-## 🔌 Production REST API Reference
-
-| Method | Endpoint | Description | Key Parameters / Payload |
-|---|---|---|---|
-| `GET` | `/api/health` | Service health & embedding model status | None |
-| `GET` | `/api/presets` | Synthetic demo candidates & job requisitions | None |
-| `GET` | `/api/skills/canonical` | 36 canonical ontology nodes with transfer graph | None |
-| `POST` | `/api/resume/analyze` | Multipart document parser (`.pdf`, `.docx`, `.txt`) | `file` (multipart) or `resume_text` (form) |
-| `POST` | `/api/resume/analyze-json`| Raw text resume extractor | `{"resume_text": "...", "filename": "resume.txt"}` |
-| `POST` | `/api/job/analyze` | Job requisition requirement extractor | `{"job_description": "...", "title": "..."}` |
-| `POST` | `/api/match` | 8-layer explainable compatibility matcher | `{"candidate": {...}, "job": {...}}` |
-| `POST` | `/api/skill-gaps` | Skill gap analysis and 4-week upskilling roadmap | `{"candidate": {...}, "job": {...}}` |
-| `POST` | `/api/resume/improve` | Evidence-grounded resume bullet optimizer | `{"candidate": {...}}` |
-| `POST` | `/api/recommendations` | Dense cosine role recommender | `{"candidate": {...}, "top_k": 5}` |
-| `GET` | `/api/evaluation` | Returns cached offline benchmark metrics | None |
-| `POST` | `/api/evaluation/run` | Executes live benchmark evaluation on CPU | None |
-
----
-
 ## 🛡️ Security, Privacy & Reliability Guardrails
 
 * **Zero PII Persistence**: Resumes are parsed in-memory during the request lifecycle. No personal candidate documents are stored on disk.
