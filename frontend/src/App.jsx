@@ -11,6 +11,7 @@ import JobRecommendations from './pages/JobRecommendations';
 import Architecture from './pages/Architecture';
 import SkillOntology from './pages/SkillOntology';
 import Evaluation from './pages/Evaluation';
+import Principles from './pages/Principles';
 
 function MainContent() {
   const { activeTab } = useApp();
@@ -26,6 +27,7 @@ function MainContent() {
       {activeTab === 'architecture' && <Architecture />}
       {activeTab === 'ontology' && <SkillOntology />}
       {activeTab === 'evaluation' && <Evaluation />}
+      {activeTab === 'principles' && <Principles />}
     </main>
   );
 }
