@@ -7,17 +7,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-# Synchronize Streamlit Cloud secrets into os.environ if running inside Streamlit
-try:
-    import streamlit as st
-    if hasattr(st, "secrets"):
-        for k, v in st.secrets.items():
-            if isinstance(v, (str, int, float, bool)) and k not in os.environ:
-                os.environ[k] = str(v)
-except Exception:
-    pass
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -57,9 +46,10 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
-        "http://localhost:8501",
+        "http://localhost:4173",
         "http://localhost:8000",
-        "http://127.0.0.1:8501",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
         "http://127.0.0.1:8000"
     ]
     MAX_UPLOAD_SIZE_MB: int = 10
