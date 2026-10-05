@@ -37,6 +37,19 @@ class Settings(BaseSettings):
             return v.lower() in ("true", "1", "yes", "debug")
         return bool(v)
 
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
+
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
@@ -46,24 +59,9 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:8501",
         "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
         "http://127.0.0.1:8501",
         "http://127.0.0.1:8000"
     ]
-
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_allowed_origins(cls, v):
-        if isinstance(v, str):
-            if v.strip().startswith("[") and v.strip().endswith("]"):
-                import json
-                try:
-                    return json.loads(v)
-                except Exception:
-                    pass
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".docx", ".txt"]
 
